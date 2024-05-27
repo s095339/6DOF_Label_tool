@@ -6,6 +6,11 @@
 #include <vector>
 #include <map>
 
+
+//my include
+#include "DataLoader.h"
+#include "LabelTool.h"
+
 namespace fs = std::filesystem;
 //using namespace cv;
 using namespace std;
@@ -17,13 +22,14 @@ vector<string> get_data_list(string img_path){
     vector<string> img_path_list = {};
 
     cout << "read image ... " << endl;
-    for (const auto & entry : fs::directory_iterator(img_path))
+    for (const auto & entry : fs::directory_iterator(img_path)){
         //std::cout << entry.path() << std::endl;
+        string entrypath = string(entry.path());
+        std::size_t found = entrypath.rfind(".");
+        if(string(entry.path()).substr(found) != ".png") continue;
         img_path_list.push_back(entry.path());
-
-
     
-
+    }
     //for debug======================
     
     cv::Mat image;
@@ -49,50 +55,45 @@ map<string, double> intrinsic_para = {
 int main(int argc, char** argv )
 {
     
+
+    //************************************//
+    // Get Data and store in a dataloader //
+    //************************************//
     // get  all image
 
-    std::string path = "../data";
+    std::string path = "../data/label1_bag";
 
     //read all image out
-    vector<string> img_path_list =  get_data_list(path);
-
+    //vector<string> img_path_list =  get_data_list(path);
+    DataLoader dataloader(path);
+    //for(int i=0; i<dataloader.length(); i++){
+    //    cout<<dataloader[i]<<endl;
+    //}
     cv::Mat intrinsic = (cv::Mat_<double>(3,3) << intrinsic_para["fx"], 0.0, intrinsic_para["cx"], 0.0, intrinsic_para["fy"] ,\
                                                         intrinsic_para["cy"], 0.0, 0.0, 1.0);
     cv::Mat dist = (cv::Mat_<double>(1,5) << 0,0,0,0,0);
     
 
+    dataloader.set_Camera_intrinsic(intrinsic);
+    dataloader.set_Camera_dist(dist);
+
+
     
+    /*
     cout << "Camera instricsic matrix:" << endl;
-    cout << dist << endl;
-    
+    cout <<  dataloader.get_Camera_intrinsic() << endl;
+    */
     //cout << intrinsic.size << endl;
     
 
-
-
-    
-   
-    
-    /*
-    if ( argc != 2 )
-    {
-        cout << "usage: DisplayImage.out <Image_Path>\n" << endl;
-        return -1;
-    }
- 
-    Mat image;
-    image = imread( argv[1], IMREAD_COLOR );
- 
-    if ( !image.data )
-    {
-        printf("No image data \n");
-        return -1;
+    //read image from dataloader=================
+    for(int i=0; i<dataloader.length(); i+=10){
+        ImageData imgdat(dataloader[i], &intrinsic, &dist);
+        imgdat.get_extrinsic();
     }
     
-    namedWindow("Display Image", WINDOW_AUTOSIZE );
-    imshow("Display Image", image);
 
-    waitKey(0);
-    */
+
+
     return 0;
 }
