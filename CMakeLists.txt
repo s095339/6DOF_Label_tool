@@ -8,5 +8,7 @@ add_executable( DisplayImage
     ./src/natural_sort_test.cpp
     ./include/DataLoader.h
     ./include/natural_sort.hpp
+    ./include/LabelTool.h
+    ./src/LabelTool.cpp
 )
 target_link_libraries( DisplayImage ${OpenCV_LIBS} )

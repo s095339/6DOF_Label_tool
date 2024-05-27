@@ -17,7 +17,7 @@ private:
     std::vector<std::string> Image_path_list;
     cv::Mat Camera_intrinsic;
     cv::Mat dist;
-    void natsort();
+    void _natsort();
 
 public:
     DataLoader(std::string);

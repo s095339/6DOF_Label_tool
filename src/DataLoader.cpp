@@ -31,7 +31,7 @@ DataLoader::DataLoader(std::string datapath)
     */
 
     //this->Image_path_list 
-    this->natsort();
+    this->_natsort();
 }
 
 void DataLoader::set_Camera_intrinsic(cv::Mat intr){
@@ -52,7 +52,7 @@ cv::Mat DataLoader::get_Camera_dist(){
 
 
 
-void DataLoader::natsort(){
+void DataLoader::_natsort(){
 
     SI::natural::sort(this->Image_path_list);
 
