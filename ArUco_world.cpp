@@ -87,12 +87,17 @@ int main(int argc, char** argv )
     
 
     //read image from dataloader=================
+    /*
     for(int i=0; i<dataloader.length(); i+=10){
         ImageData imgdat(dataloader[i], &intrinsic, &dist);
         imgdat.get_extrinsic();
     }
-    
+    */
 
+    LabelTool labeltool(dataloader);
+    labeltool.build_data_list();
+    cv::imshow("output", labeltool.get_imgdat(20));
+    cv::waitKey(0);
 
 
     return 0;
