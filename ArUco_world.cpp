@@ -16,36 +16,6 @@ namespace fs = std::filesystem;
 //using namespace cv;
 using namespace std;
 
-
-
-vector<string> get_data_list(string img_path){
-
-    vector<string> img_path_list = {};
-
-    cout << "read image ... " << endl;
-    for (const auto & entry : fs::directory_iterator(img_path)){
-        //std::cout << entry.path() << std::endl;
-        string entrypath = string(entry.path());
-        std::size_t found = entrypath.rfind(".");
-        if(string(entry.path()).substr(found) != ".png") continue;
-        img_path_list.push_back(entry.path());
-    
-    }
-    //for debug======================
-    
-    cv::Mat image;
-    for(const auto & img_path : img_path_list){
-        image = cv::imread( img_path, cv::IMREAD_COLOR );
-        cv::namedWindow("Display Image", cv::WINDOW_AUTOSIZE );
-        cv::imshow("Display Image", image);
-        cv::waitKey(0);
-    }
-    
-    //=================================
-    return img_path_list;
-
-}
-
 map<string, double> intrinsic_para = {
     {"fx", 908.78692627},
     {"fy", 907.3694458},
@@ -84,41 +54,34 @@ map<int, cv::Point3f> refMarkerArray = {
         {18, cv::Vec3f(0.4, 0.0, 0.7) },
 };
 
-/* python 
-re) MarkerArray={   \
-    #===============================
-        20:[0.0, 0.0, 0.0],\
-        21:[0.5, 0.0, 0.0],\
-        22:[0.5, 0.0, 0.7],\
-        23:[0.0, 0.0, 0.7],\
-    #===============================
-        25:[0.0, 0.0, 0.1],\
-        26:[0.0, 0.0, 0.2],\
-        27:[0.0, 0.0, 0.3],\
-        28:[0.0, 0.0, 0.4],\
-        29:[0.0, 0.0, 0.5],\
-        30:[0.0, 0.0, 0.6],\
-    #================================
-        14:[0.1, 0.0, 0.0],\
-        24:[0.2, 0.0, 0.0],\
-        19:[0.3, 0.0, 0.0],\
-    #================================
-        7:[0.5, 0.0, 0.1],\
-        8:[0.5, 0.0, 0.2],\
-        9:[0.5, 0.0, 0.3],\
-        10:[0.5, 0.0, 0.4],\
-        11:[0.5, 0.0, 0.5],\
-        12:[0.5, 0.0, 0.6],\
-    #=================================
-        15:[0.1, 0.0, 0.7],\
-        16:[0.2, 0.0, 0.7],\
-        17:[0.3, 0.0, 0.7],\
-        18:[0.4, 0.0, 0.7],\
+void test_annotation(LabelTool& labeltool){
+
+    /*  test OK 
+    for(int i=0; i<labeltool.get_data_length(); i++){
+        cv::imshow("test", labeltool.imshow_with_label(i));
+        cv::waitKey(0);
     }
+    */
+    labeltool.get_anno().box_spawn(); //generate first box
+    cv::imshow("test", labeltool.imshow_with_label(20));
+    cv::waitKey(0);
 
-*/
+    labeltool.get_anno().box_spawn(); //generate second box and configure
+    labeltool.get_anno().configure_box(
+        1, 
+        cv::Point3f(0.1,0,0.1), 
+        cv::Point3f(0,0.1,0),
+        cv::Vec3f(0,0,0)
+        );
 
+    cv::imshow("test", labeltool.imshow_with_label(20));
+    cv::waitKey(0);
 
+    labeltool.get_anno().box_remove(0);
+    cv::imshow("test", labeltool.imshow_with_label(20));
+    cv::waitKey(0);
+
+}
 int main(int argc, char** argv )
 {
     
@@ -167,10 +130,8 @@ int main(int argc, char** argv )
 
     LabelTool labeltool(dataloader);
     labeltool.build_data_list(refMarkerArray);
-    
-    
-    labeltool.get_imgdat(20);
-
+    //labeltool.get_imgdat(20);
+    test_annotation(labeltool);
     //labeltool.set_coordinate_ref();
 
     //Test Labeltool and Dataloader

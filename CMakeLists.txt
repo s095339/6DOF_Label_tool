@@ -10,5 +10,7 @@ add_executable( DisplayImage
     ./include/natural_sort.hpp
     ./include/LabelTool.h
     ./src/LabelTool.cpp
+    ./include/Annotation.h
+    ./src/Annotation.cpp
 )
 target_link_libraries( DisplayImage ${OpenCV_LIBS} )
