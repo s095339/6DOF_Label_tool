@@ -2,10 +2,12 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "LabelTool.h"
+#include "Annotation.h"
 #include <opencv2/aruco.hpp>
 #include <map>
 #include <stdexcept>
 #include <algorithm>
+#include <tuple>
 //non-menber function
 
 
@@ -25,7 +27,7 @@ ImageData::ImageData(std::string image_path, cv::Mat* const intr_ptr, cv::Mat* c
 
 cv::Mat ImageData::get_image(){
     if(this->keep_in_mem)
-        return this->image;
+        return this->image.clone();
     else
         return cv::imread(this->image_path, cv::IMREAD_COLOR);
     
@@ -33,7 +35,7 @@ cv::Mat ImageData::get_image(){
 
 
 
-int ImageData::get_extrinsic(std::map<int, cv::Point3f>refMarkerArray, int keep_in_mem)
+int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray, int keep_in_mem)
 {   
     /*
     Parameter
@@ -194,6 +196,10 @@ int ImageData::_estimateCameraPose(
     return flag;
 }   
 
+
+std::tuple<cv::Vec3f, cv::Vec3f> ImageData::get_extrinsic(){
+    return  std::tuple<cv::Vec3f, cv::Vec3f>(this->tvecs, this->rvecs);
+}
 //************************//
 // LabelTool              //
 //************************//
@@ -201,6 +207,7 @@ int ImageData::_estimateCameraPose(
 LabelTool::LabelTool(DataLoader& dataloader)
 :dataloader{dataloader}, intrinsic{dataloader.get_Camera_intrinsic()}, dist{dataloader.get_Camera_dist()}
 {
+    this->anno = Annotation();
 
 }
 void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int keep_in_mem){
@@ -210,8 +217,8 @@ void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int k
     int deleted = 0;
     for(int i=0; i<dataloader.length(); i+=10){
         std::cout << "read image: " <<dataloader[i] << std::endl;
-        ImageData imgdat(dataloader[i], &intrinsic, &dist);
-        int flag = imgdat.get_extrinsic(refMarkerArray);
+        ImageData imgdat(dataloader[i], &intrinsic, &dist);// &(this->intrinsic) &(this->dist)
+        int flag = imgdat.calculate_extrinsic(refMarkerArray);
         if(flag == 1) this->data_list.push_back(imgdat);
         else deleted++;
     }
@@ -221,10 +228,11 @@ void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int k
         << std::endl;
     // get extrinsic
     //for(auto &imgdat : this->data_list){
-    //    imgdat.get_extrinsic(this->refMarkerArray, keep_in_mem);
+    //    imgdat.calculate_extrinsic(this->refMarkerArray, keep_in_mem);
     //}
     
 }
+
 
 ImageData LabelTool::get_imgdat(int idx){
     return this->data_list.at(idx);
@@ -232,4 +240,51 @@ ImageData LabelTool::get_imgdat(int idx){
 
 void LabelTool::_set_coordinate_ref(std::map<int, cv::Point3f> refMarkerArray){
     this->refMarkerArray = refMarkerArray;
+}
+
+Annotation& LabelTool::get_anno(){
+    return this->anno;
+}
+
+int LabelTool::get_data_length(){
+    return this->data_list.size();
+}
+cv::Mat LabelTool::imshow_with_label(int idx){
+
+    // get image data
+    ImageData imgdat = this->get_imgdat(idx);
+    cv::Mat img = imgdat.get_image();
+    cv::Vec3f tvecs, rvecs;
+    tvecs = std::get<0>(imgdat.get_extrinsic());
+    rvecs = std::get<1>(imgdat.get_extrinsic());
+
+    // get annotation data
+    for(int i=0 ; i<this->anno.box_number(); i++){
+        Box3d box = this->anno.get_box(i);
+        std::vector<cv::Point3f> vertices = box.get_vertex();
+
+        //transformation
+        std::vector<cv::Point2f> pts_camera; 
+        cv::projectPoints(vertices,rvecs, tvecs, this->intrinsic, this->dist, pts_camera);
+
+        for(auto& pt : pts_camera){
+            cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+        }
+
+        cv::line(img,pts_camera[0],pts_camera[1], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[0],pts_camera[4], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[5],pts_camera[1], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[4],pts_camera[5], cv::Scalar(255,0,0),2);
+
+        cv::line(img,pts_camera[2],pts_camera[6], cv::Scalar(0,255,0),2);
+        cv::line(img,pts_camera[3],pts_camera[7], cv::Scalar(0,255,0),2);
+        cv::line(img,pts_camera[2],pts_camera[3], cv::Scalar(0,255,0),2);
+        cv::line(img,pts_camera[6],pts_camera[7], cv::Scalar(0,255,0),2);
+
+        cv::line(img,pts_camera[0],pts_camera[2], cv::Scalar(0,0,255),2);
+        cv::line(img,pts_camera[3],pts_camera[1], cv::Scalar(0,0,255),2);
+        cv::line(img,pts_camera[7],pts_camera[5], cv::Scalar(0,0,255),2);
+        cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(0,0,255),2);
+    }
+    return img;
 }

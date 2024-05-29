@@ -3,10 +3,11 @@
 #define _LABELTOOL_H_
 
 #include "DataLoader.h"
-
+#include "Annotation.h"
 //STL library
 #include <iostream>
 #include <map>
+#include <tuple>
 //Opencv Library
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/matx.hpp>
@@ -26,8 +27,6 @@ private:
     
     //image read from opnecv
     cv::Mat image;
-
-    
     int keep_in_mem;
 
     int _estimateCameraPose(
@@ -40,10 +39,12 @@ public:
     ImageData(std::string, cv::Mat* const, cv::Mat* const);
     //ImageData(ImageData && source); 
     //menber function
-    int get_extrinsic(
+    int calculate_extrinsic(
         std::map<int, cv::Point3f>, 
         int keep_in_mem = 0
         );
+    std::tuple<cv::Vec3f, cv::Vec3f> get_extrinsic();
+
     cv::Mat get_image();
 };
 
@@ -56,14 +57,23 @@ private:
     std::vector<ImageData> data_list;
 
     std::map<int, cv::Point3f> refMarkerArray;
+
+     //Annotation object
+    Annotation anno;
+
+
     void _set_coordinate_ref(std::map<int, cv::Point3f>);
 public:
     LabelTool(DataLoader&); //Constructor
     void build_data_list(std::map<int, cv::Point3f>, int keep_in_mem = 0);
     
+
     ImageData get_imgdat(int);
+    Annotation& get_anno();
+    
+    cv::Mat imshow_with_label(int); //for test
 
-
+    int get_data_length();// get the number of imagedata
 };
 
 
