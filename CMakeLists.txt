@@ -12,6 +12,7 @@ endif()
 include_directories( 
     ${OpenCV_INCLUDE_DIRS} 
     include 
+    gui/include
     )
 
 
@@ -31,6 +32,31 @@ add_executable( DisplayImage
     #GUI
     ./gui/include/simple.h
     ./gui/src/simple.cpp
+    ./gui/include/Communicate.h
+    ./gui/include/Panel.h
+    ./gui/src/Panel.cpp
+    ./gui/src/Communicate.cpp
+
+    ./gui/include/menu.h
+    ./gui/src/menu.cpp
+
+    ./gui/include/toolbar.h
+    ./gui/src/toolbar.cpp
+
+    ./gui/include/Sizer.h
+    ./gui/src/Sizer.cpp
+
+    ./gui/include/border.h
+    ./gui/src/border.cpp
+
+    ./gui/include/align.h
+    ./gui/src/align.cpp
+
+    ./gui/include/gotoclass.h
+    ./gui/src/gotoclass.cpp
+
+    ./gui/include/DataReader.h
+    ./gui/src/DataReader.cpp
 )
 target_link_libraries( DisplayImage ${wxWidgets_LIBRARIES} ${OpenCV_LIBS} )
 
