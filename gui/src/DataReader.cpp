@@ -1,5 +1,5 @@
 #include "DataReader.h"
-
+#include "Annotator.h"
 #include <wx/dir.h>
 
 #include "DataLoader.h"
@@ -54,7 +54,8 @@ void DataReader::OnReadDirectory(wxCommandEvent& event)
         //    cont = dir.GetNext(&filename);
         //}
 
-        DataLoader * dataloader = new DataLoader(dir_path);
-
+        
+        Annotator* annotator = new Annotator(wxT("annotator"), wxBITMAP_TYPE_PNG, dir_path);
+        annotator->Show(true);
     }
 }
