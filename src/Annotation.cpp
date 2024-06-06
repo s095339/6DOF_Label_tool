@@ -125,6 +125,10 @@ std::vector<cv::Point3f> Box3d::get_vertex(){
     return this->vertices;
 }
 
+cv::Point3f Box3d::get_position(){
+    return this->position;
+}
+
 int Box3d::get_cls(){
     return this->cls;
 }

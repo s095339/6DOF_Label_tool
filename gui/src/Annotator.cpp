@@ -82,8 +82,14 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     //arrangement===============================================
     wxPanel *paintPanel = new wxPanel(this, -1);
     wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
+
     wxBoxSizer *hbox0 = new wxBoxSizer(wxHORIZONTAL);// put box and choose box
-    wxBoxSizer *hbox1 = new wxBoxSizer(wxHORIZONTAL);
+    
+    wxBoxSizer *hbox1 = new wxBoxSizer(wxHORIZONTAL);// configure box
+    wxBoxSizer* vbox_x = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vbox_y = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vbox_z = new wxBoxSizer(wxVERTICAL);
+    
     wxBoxSizer *hbox2 = new wxBoxSizer(wxHORIZONTAL);// choose the image
     
     //* set bounding box [hbox0]
@@ -92,12 +98,28 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     box_remove = new wxButton(paintPanel, ID_BOX_REMOVE, wxT(" BoxRemove "), wxDefaultPosition);
     box_select = new wxComboBox(paintPanel, ID_COMBLEBOX, wxT("-no box-"));
 
-    //TODO Configure bounding box
-    
-    
+    //* Configure bounding box [hbox1]
+    {
+        //x
+        box_x_plus = new wxButton(paintPanel, ID_X_PLUS, wxT("x+"));
+        box_x_val = new wxStaticText(paintPanel, wxID_ANY, wxT(""));
+        box_x_minus = new wxButton(paintPanel, ID_X_MINUS, wxT("x-"));
+
+        //y
+        box_y_plus = new wxButton(paintPanel, ID_Y_PLUS, wxT("y+"));
+        box_y_val = new wxStaticText(paintPanel, wxID_ANY, wxT(""));
+        box_y_minus = new wxButton(paintPanel, ID_Y_MINUS, wxT("y-"));
+
+        //z
+        box_z_plus = new wxButton(paintPanel, ID_Z_PLUS, wxT("z+"));
+        box_z_val = new wxStaticText(paintPanel, wxID_ANY, wxT(""));
+        box_z_minus = new wxButton(paintPanel, ID_Z_MINUS, wxT("z-"));
+    }
+
+
     //* choose image [hbox2]
   
-    //hbox2 
+     
     img_id_text = new wxStaticText(paintPanel, -1, wxT("-------"),wxDefaultPosition,wxSize(20,-1));
     previous_image = new wxButton(paintPanel, ID_PRE_IMG, wxT("<-"));
     next_image = new wxButton(paintPanel, ID_NEXT_IMG, wxT("->"));
@@ -114,6 +136,20 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     vbox->Add(hbox0, 1, wxEXPAND);
 
     //hbox1->Add(img_panel);
+    vbox_x->Add(box_x_plus);
+    vbox_x->Add(box_x_val);
+    vbox_x->Add(box_x_minus);
+
+    vbox_y->Add(box_y_plus);
+    vbox_y->Add(box_y_val);
+    vbox_y->Add(box_y_minus);
+
+    vbox_z->Add(box_z_plus);
+    vbox_z->Add(box_z_val);
+    vbox_z->Add(box_z_minus);
+    hbox1->Add(vbox_x, 1, wxEXPAND);
+    hbox1->Add(vbox_y, 1, wxEXPAND);
+    hbox1->Add(vbox_z, 1, wxEXPAND);
     vbox->Add(hbox1 , 1, wxEXPAND);
 
     hbox2->Add(previous_10_image);
@@ -125,13 +161,27 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     vbox->Add(hbox2, 0 ,  wxALIGN_BOTTOM|wxBOTTOM, 0);
 
     paintPanel->SetSizer(vbox);
-    //set Event
+    //*set Event
     Connect(ID_BOX_SPAWN, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnBoxSpawn));
     Connect(ID_BOX_REMOVE, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnBoxRemove));
-
-
+    box_select->Connect(ID_COMBLEBOX, wxEVT_COMMAND_COMBOBOX_SELECTED,
+        wxCommandEventHandler(Annotator::OnComboBoxSelect), NULL, this);
+    //* box configuration
+    Connect(ID_X_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnXPlus));
+    Connect(ID_X_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnXMinus));
+    Connect(ID_Y_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnXPlus));
+    Connect(ID_Y_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnYMinus));
+    Connect(ID_Z_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnZPlus));
+    Connect(ID_Z_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnZMinus));
+    //*image choose
     Connect(ID_PRE_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnPreviousClick));
     Connect(ID_NEXT_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
@@ -140,7 +190,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
       wxCommandEventHandler(Annotator::OnPrevious10Click));
     Connect(ID_NEXT10_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnNext10Click));
-    cout << "Annotator created" << endl;
+    
 }
 //Set box
 void Annotator::OnBoxSpawn(wxCommandEvent & WXUNUSED(event)){
@@ -188,8 +238,81 @@ void Annotator::OnBoxRemove(wxCommandEvent & WXUNUSED(event)){
     ShowImage();
 }
 
+void Annotator::OnComboBoxSelect(wxCommandEvent& event)
+{
+    std::cout << "Event Triggered" << std::endl;
+    box_id =  box_select->GetSelection();
+    std::cout << "Select box: " << box_id << std::endl;
+    cv::Point3f pos = labeltool->get_anno().get_box(box_id).get_position();
+    box_x_val->SetLabelText(
+        wxString::Format(wxT("%f"), pos.x)
+    );
+
+    box_y_val->SetLabelText(
+        wxString::Format(wxT("%f"), pos.y)
+    );
+
+    box_z_val->SetLabelText(
+        wxString::Format(wxT("%f"), pos.z)
+    );
+}
 
 
+// configurate box
+void Annotator::OnXPlus(wxCommandEvent & WXUNUSED(event)){
+    labeltool->get_anno().configure_box(this->box_id, 
+                                    cv::Point3f(stride, 0, 0), 
+                                    cv::Point3f(0,0,0), 
+                                    cv::Point3f(0,0,0)
+    );
+
+    ShowImage();
+}
+void Annotator::OnXMinus(wxCommandEvent & WXUNUSED(event)){
+    labeltool->get_anno().configure_box(this->box_id, 
+                                    cv::Point3f(-stride, 0, 0), 
+                                    cv::Point3f(0,0,0), 
+                                    cv::Point3f(0,0,0)
+    );
+
+    ShowImage();
+}
+void Annotator::OnYPlus(wxCommandEvent & WXUNUSED(event)){
+    labeltool->get_anno().configure_box(this->box_id, 
+                                    cv::Point3f(0, stride, 0), 
+                                    cv::Point3f(0,0,0), 
+                                    cv::Point3f(0,0,0)
+    );
+
+    ShowImage();
+}
+void Annotator::OnYMinus(wxCommandEvent & WXUNUSED(event)){
+    labeltool->get_anno().configure_box(this->box_id, 
+                                    cv::Point3f(0, -stride, 0), 
+                                    cv::Point3f(0,0,0), 
+                                    cv::Point3f(0,0,0)
+    );
+
+    ShowImage();
+}
+void Annotator::OnZPlus(wxCommandEvent & WXUNUSED(event)){
+    labeltool->get_anno().configure_box(this->box_id, 
+                                    cv::Point3f(0, 0, stride), 
+                                    cv::Point3f(0,0,0), 
+                                    cv::Point3f(0,0,0)
+    );
+
+    ShowImage();
+}
+void Annotator::OnZMinus(wxCommandEvent & WXUNUSED(event)){
+    labeltool->get_anno().configure_box(this->box_id, 
+                                    cv::Point3f(0, 0, -stride), 
+                                    cv::Point3f(0,0,0), 
+                                    cv::Point3f(0,0,0)
+    );
+
+    ShowImage();
+}
 //Choose Image
 void Annotator::OnNextClick(wxCommandEvent & WXUNUSED(event))
 {

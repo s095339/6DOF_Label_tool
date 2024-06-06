@@ -50,6 +50,7 @@ public:
     ); //generate a Box
     std::vector<cv::Point3f> get_vertex();// return the vertices
     int get_cls();
+    cv::Point3f get_position();
     void configure_box(cv::Point3f, cv::Point3f , cv::Vec3f);
     //change the size, position, roatation of the box object 
 };
