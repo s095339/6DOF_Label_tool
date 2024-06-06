@@ -62,7 +62,7 @@ cv::Mat _intrinsic = (cv::Mat_<double>(3,3) << _intrinsic_para["fx"], 0.0, _intr
 cv::Mat _dist = (cv::Mat_<double>(1,5) << 0,0,0,0,0);
 
 Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_path)
-       : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(400,300))
+       : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(600,300))
 {   
 
     cv::namedWindow("Stream", cv::WINDOW_NORMAL);
@@ -75,20 +75,28 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     this->labeltool = new LabelTool(*dataloader);
     labeltool->build_data_list(_refMarkerArray, 5);
 
+    box_id = 0;
+    box_count = 0;
     max_img = labeltool->get_data_length();
     image_id = 0;
     //arrangement===============================================
     wxPanel *paintPanel = new wxPanel(this, -1);
     wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
-    wxBoxSizer *hbox0 = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *hbox0 = new wxBoxSizer(wxHORIZONTAL);// put box and choose box
     wxBoxSizer *hbox1 = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer *hbox2 = new wxBoxSizer(wxHORIZONTAL);// choose the image
     
-    //hbox1
-    wxPanel *img_panel = new wxPanel(paintPanel);
-    //********************************************* //
-    //*choose image
-    //********************************************* //
+    //* set bounding box [hbox0]
+    cls_select = new wxTextCtrl(paintPanel, ID_CLS_SELECT, "", wxDefaultPosition, wxDefaultSize);
+    box_spawn  = new wxButton(paintPanel, ID_BOX_SPAWN, wxT(" BoxSpawn "), wxDefaultPosition);
+    box_remove = new wxButton(paintPanel, ID_BOX_REMOVE, wxT(" BoxRemove "), wxDefaultPosition);
+    box_select = new wxComboBox(paintPanel, ID_COMBLEBOX, wxT("-no box-"));
+
+    //TODO Configure bounding box
+    
+    
+    //* choose image [hbox2]
+  
     //hbox2 
     img_id_text = new wxStaticText(paintPanel, -1, wxT("-------"),wxDefaultPosition,wxSize(20,-1));
     previous_image = new wxButton(paintPanel, ID_PRE_IMG, wxT("<-"));
@@ -99,7 +107,13 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
 
     // set sizer 
-    hbox1->Add(img_panel);
+    hbox0->Add(img_id_text);
+    hbox0->Add(box_spawn);
+    hbox0->Add(box_remove);
+    hbox0->Add(box_select);
+    vbox->Add(hbox0, 1, wxEXPAND);
+
+    //hbox1->Add(img_panel);
     vbox->Add(hbox1 , 1, wxEXPAND);
 
     hbox2->Add(previous_10_image);
@@ -112,6 +126,12 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
     paintPanel->SetSizer(vbox);
     //set Event
+    Connect(ID_BOX_SPAWN, wxEVT_COMMAND_BUTTON_CLICKED, 
+      wxCommandEventHandler(Annotator::OnBoxSpawn));
+    Connect(ID_BOX_REMOVE, wxEVT_COMMAND_BUTTON_CLICKED, 
+      wxCommandEventHandler(Annotator::OnBoxRemove));
+
+
     Connect(ID_PRE_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnPreviousClick));
     Connect(ID_NEXT_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
@@ -122,8 +142,55 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
       wxCommandEventHandler(Annotator::OnNext10Click));
     cout << "Annotator created" << endl;
 }
+//Set box
+void Annotator::OnBoxSpawn(wxCommandEvent & WXUNUSED(event)){
+    try
+    {
+        int cls = stoi(cls_select->GetValue().ToStdString());
+        if (cls <0){
+            wxLogError("Number should >=  0");
+            return;
+        }
+        box_count ++;
+        //box_id  = box_count -1; //set to latest box    
+        labeltool->get_anno().box_spawn(cls);
+        cout << "Box Spawn" << endl;
+        
+        box_select->Append(wxString::Format("box id: %d cls: %d", box_count-1,cls ));
+
+        ShowImage();
+
+        return; 
+    }
+    catch(const std::exception& e)
+    {
+        wxLogError("Please input Number");
+        return;
+    }
+}
+void Annotator::OnBoxRemove(wxCommandEvent & WXUNUSED(event)){
+    box_id = box_select->GetSelection();
+    if (box_id != wxNOT_FOUND)
+    {
+        labeltool->get_anno().box_remove(box_id);
+        box_count--;
+
+        box_select->Clear();
+        for(int i=0; i<labeltool->get_anno().box_number();i++){
+            box_select->Append(wxString::Format("box id: %d cls: %d", i, labeltool->get_anno().get_box(i).get_cls()));
+        }
+    }
+    else
+    {
+        wxMessageBox("No item selected", "Error", wxOK | wxICON_ERROR);
+        return;
+    }
+    ShowImage();
+}
 
 
+
+//Choose Image
 void Annotator::OnNextClick(wxCommandEvent & WXUNUSED(event))
 {
     image_id = (image_id < max_img-1 )? image_id + 1 : image_id;
@@ -167,5 +234,5 @@ void Annotator::OnPrevious10Click(wxCommandEvent & WXUNUSED(event))
     ShowImage();
 }
 void Annotator::ShowImage(){
-    labeltool->imshow_with_label(image_id);
+    cv::imshow("Stream", labeltool->imshow_with_label(image_id));
 }
