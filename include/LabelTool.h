@@ -46,6 +46,7 @@ public:
     std::tuple<cv::Vec3f, cv::Vec3f> get_extrinsic();
 
     cv::Mat get_image();
+    std::string get_image_path();
 };
 
 
@@ -65,7 +66,7 @@ private:
     void _set_coordinate_ref(std::map<int, cv::Point3f>);
 public:
     LabelTool(DataLoader&); //Constructor
-    void build_data_list(std::map<int, cv::Point3f>, int keep_in_mem = 0);
+    void build_data_list(std::map<int, cv::Point3f>, int interval = 1, int keep_in_mem = 0);
     
 
     ImageData get_imgdat(int);
@@ -74,6 +75,7 @@ public:
     cv::Mat imshow_with_label(int); //for test
 
     int get_data_length();// get the number of imagedata
+    void generate_annotation();
 };
 
 

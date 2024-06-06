@@ -12,7 +12,11 @@
 //   Box3d                   //
 //***************************//
 
-
+enum class cls{
+    foup,
+    grab_point1,
+    grab_point2
+};
 enum class VertertexType
 {   
                  
@@ -33,17 +37,19 @@ enum class VertertexType
 class Box3d{
 
 private:
+    int cls; //class 
     cv::Point3f position;
     cv::Point3f rotation;    
     cv::Vec3f size;
     std::vector<cv::Point3f> vertices; //11 vertice
 public:
-    Box3d(  cv::Point3f position = cv::Point3f(0.2,0.1,0.2), 
+    Box3d(  int cls,
+            cv::Point3f position = cv::Point3f(0.2,0.1,0.2), 
             cv::Point3f rotation = cv::Point3f(0,0,0), 
             cv::Vec3f   size = cv::Vec3f(0.2,0.2,0.2)
     ); //generate a Box
     std::vector<cv::Point3f> get_vertex();// return the vertices
-
+    int get_cls();
     void configure_box(cv::Point3f, cv::Point3f , cv::Vec3f);
     //change the size, position, roatation of the box object 
 };
@@ -59,7 +65,7 @@ private:
     std::vector<Box3d> Box_list;
 public:
     Annotation();
-    void box_spawn();
+    void box_spawn(int cls);
     void box_remove(int box_id);
     void box_clean();
     void configure_box(
@@ -69,7 +75,7 @@ public:
         cv::Vec3f size
     );
     Box3d& get_box(int box_id);
-    void generate_Annotation();
+    //void generate_Annotation();
     int box_number();
 };
 

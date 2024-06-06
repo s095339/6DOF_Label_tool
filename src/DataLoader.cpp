@@ -12,7 +12,7 @@ DataLoader::DataLoader(std::string datapath)
 
     cout << "read image ... " << endl;
     for (const auto & entry : fs::directory_iterator(this->datapath)){
-        //std::cout << entry.path() << std::endl;
+        //std::cout << "read " << entry.path() << std::endl;
         string entrypath = string(entry.path());
         std::size_t found = entrypath.rfind(".");
         if(string(entry.path()).substr(found) != ".png") continue;

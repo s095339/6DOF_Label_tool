@@ -10,9 +10,10 @@
 //   Box3d                   //
 //***************************//
 Box3d::Box3d(
-    cv::Point3f position, cv::Point3f rotation, cv::Vec3f size
+    int cls, cv::Point3f position, cv::Point3f rotation, cv::Vec3f size
 )
 {
+    this->cls = cls;
     this->position = position;
     this->rotation = rotation;
     this->size = size;
@@ -124,6 +125,9 @@ std::vector<cv::Point3f> Box3d::get_vertex(){
     return this->vertices;
 }
 
+int Box3d::get_cls(){
+    return this->cls;
+}
 //***************************//
 //  Annotation               //
 //***************************//
@@ -132,8 +136,8 @@ Annotation::Annotation(){
     std::cout<<"[info] Annotation object generated" << std::endl;
 }
 
-void Annotation::box_spawn(){
-    Box3d box;
+void Annotation::box_spawn(int cls){
+    Box3d box(cls);
     this->Box_list.push_back(box);
 }
 
@@ -173,6 +177,6 @@ int Annotation::box_number(){
     return this->Box_list.size();
 }
 
-void Annotation::generate_Annotation(){
-    std::cout<<"[todo] generate annotation json file " << std::endl;
-}
+//void Annotation::generate_Annotation(){
+//    std::cout<<"[todo] generate annotation json file " << std::endl;
+//}

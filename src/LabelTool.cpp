@@ -200,6 +200,10 @@ int ImageData::_estimateCameraPose(
 std::tuple<cv::Vec3f, cv::Vec3f> ImageData::get_extrinsic(){
     return  std::tuple<cv::Vec3f, cv::Vec3f>(this->tvecs, this->rvecs);
 }
+
+std::string ImageData::get_image_path(){
+    return this->image_path;
+}
 //************************//
 // LabelTool              //
 //************************//
@@ -210,15 +214,16 @@ LabelTool::LabelTool(DataLoader& dataloader)
     this->anno = Annotation();
 
 }
-void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int keep_in_mem){
+void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int interval,  int keep_in_mem){
     this->_set_coordinate_ref(refMarkerArray);
     // add all image 
 
     int deleted = 0;
-    for(int i=0; i<dataloader.length(); i+=10){
-        std::cout << "read image: " <<dataloader[i] << std::endl;
+    int count = 0;
+    for(int i=0; i<dataloader.length(); i+=interval){
+        std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
         ImageData imgdat(dataloader[i], &intrinsic, &dist);// &(this->intrinsic) &(this->dist)
-        int flag = imgdat.calculate_extrinsic(refMarkerArray);
+        int flag = imgdat.calculate_extrinsic(refMarkerArray, keep_in_mem);
         if(flag == 1) this->data_list.push_back(imgdat);
         else deleted++;
     }
@@ -253,20 +258,26 @@ cv::Mat LabelTool::imshow_with_label(int idx){
 
     // get image data
     ImageData imgdat = this->get_imgdat(idx);
+
+    //get image
     cv::Mat img = imgdat.get_image();
+
+    //get image extrinsic
     cv::Vec3f tvecs, rvecs;
     tvecs = std::get<0>(imgdat.get_extrinsic());
     rvecs = std::get<1>(imgdat.get_extrinsic());
 
-    // get annotation data
-    for(int i=0 ; i<this->anno.box_number(); i++){
+    // get annotation data (box information)
+    for(int i=0 ; i<this->anno.box_number(); i++)//iterate all box 
+    {
         Box3d box = this->anno.get_box(i);
         std::vector<cv::Point3f> vertices = box.get_vertex();
 
-        //transformation
+        //transformation box coordinate from world to image plane  
         std::vector<cv::Point2f> pts_camera; 
         cv::projectPoints(vertices,rvecs, tvecs, this->intrinsic, this->dist, pts_camera);
 
+        //visualize box 
         for(auto& pt : pts_camera){
             cv::circle(img, pt, 2, cv::Scalar(0,128,128));
         }
@@ -286,5 +297,13 @@ cv::Mat LabelTool::imshow_with_label(int idx){
         cv::line(img,pts_camera[7],pts_camera[5], cv::Scalar(0,0,255),2);
         cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(0,0,255),2);
     }
+
+    //cv::imshow("Stream", img);
+    //cv::waitKey(0);
     return img;
+}
+
+void LabelTool::generate_annotation(){
+
+    std::cout << "[todo] Generate annotation" << std::endl;
 }

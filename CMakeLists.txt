@@ -57,6 +57,9 @@ add_executable( DisplayImage
 
     ./gui/include/DataReader.h
     ./gui/src/DataReader.cpp
+
+    ./gui/include/Annotator.h
+    ./gui/src/Annotator.cpp
 )
 target_link_libraries( DisplayImage ${wxWidgets_LIBRARIES} ${OpenCV_LIBS} )
 
