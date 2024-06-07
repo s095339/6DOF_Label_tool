@@ -254,8 +254,8 @@ Annotation& LabelTool::get_anno(){
 int LabelTool::get_data_length(){
     return this->data_list.size();
 }
-cv::Mat LabelTool::imshow_with_label(int idx){
-
+cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
+                                    // image id   //the id of the box 
     // get image data
     ImageData imgdat = this->get_imgdat(idx);
 
@@ -277,6 +277,7 @@ cv::Mat LabelTool::imshow_with_label(int idx){
         std::vector<cv::Point2f> pts_camera; 
         cv::projectPoints(vertices,rvecs, tvecs, this->intrinsic, this->dist, pts_camera);
 
+        
         //visualize box 
         for(auto& pt : pts_camera){
             cv::circle(img, pt, 2, cv::Scalar(0,128,128));
@@ -296,8 +297,14 @@ cv::Mat LabelTool::imshow_with_label(int idx){
         cv::line(img,pts_camera[3],pts_camera[1], cv::Scalar(0,0,255),2);
         cv::line(img,pts_camera[7],pts_camera[5], cv::Scalar(0,0,255),2);
         cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(0,0,255),2);
+
+        if(i == show_selected_box_direction){
+            cv::arrowedLine(img,pts_camera[9],pts_camera[11], cv::Scalar(255,0,0),2);
+            cv::arrowedLine(img,pts_camera[10],pts_camera[12], cv::Scalar(0,255,0),2);
+        }
     }
 
+    
     //cv::imshow("Stream", img);
     //cv::waitKey(0);
     return img;

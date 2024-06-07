@@ -72,7 +72,7 @@ public:
     ImageData get_imgdat(int);
     Annotation& get_anno();
     
-    cv::Mat imshow_with_label(int); //for test
+    cv::Mat imshow_with_label(int idx, int show_selected_box_direction = -1); //for test
 
     int get_data_length();// get the number of imagedata
     void generate_annotation();
