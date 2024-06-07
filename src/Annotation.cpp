@@ -36,9 +36,9 @@ Box3d::Box3d(
     //X axis point to the right
     right = cx + width / 2.0;
     left = cx - width / 2.0;
-    //Y axis point upward
-    top = cy + height / 2.0;
-    bottom = cy - height / 2.0;
+    //Y axis point upward(注意這邊是反過來的)
+    top = cy - height / 2.0;
+    bottom = cy + height / 2.0;
     //Z axis point forward
     front = cz + depth / 2.0;
     rear = cz - depth / 2.0;
@@ -56,10 +56,15 @@ Box3d::Box3d(
         //center
         cv::Point3f(cx, cy, cz),
         // front center
-        cv::Point3f(0, 0, cz),
+        cv::Point3f(cx, cy, front),
         // top center
-        cv::Point3f(0, cy, 0)
+        cv::Point3f(cx, top, cz),
         
+        //in front of front center
+        cv::Point3f(cx, cy, front+0.2),
+        //above top center
+        cv::Point3f(cx, top-0.2, cz)
+
     };
 }
 
@@ -67,7 +72,7 @@ Box3d::Box3d(
 
 
 void Box3d::configure_box(
-    cv::Point3f position, cv::Point3f rotation, cv::Vec3f size
+    cv::Point3f position, cv::Vec3f rotation, cv::Vec3f size
 )
 {   
 
@@ -93,9 +98,9 @@ void Box3d::configure_box(
     //X axis point to the right
     right = cx + width / 2.0;
     left = cx - width / 2.0;
-    //Y axis point upward
-    top = cy + height / 2.0;
-    bottom = cy - height / 2.0;
+    //Y axis point upward(注意這邊是反過來的)
+    top = cy - height / 2.0;
+    bottom = cy + height / 2.0;
     //Z axis point forward
     front = cz + depth / 2.0;
     rear = cz - depth / 2.0;
@@ -113,11 +118,30 @@ void Box3d::configure_box(
         //center
         cv::Point3f(cx, cy, cz),
         // front center
-        cv::Point3f(0, 0, cz),
+        cv::Point3f(cx, cy, front),
         // top center
-        cv::Point3f(0, cy, 0)
+        cv::Point3f(cx, top, cz),
         
+        //in front of front center
+        cv::Point3f(cx, cy, front+0.2),
+        //above top center
+        cv::Point3f(cx, top-0.2, cz)
+
     };
+
+    cv::Point3f center = this->vertices[8];
+    std::vector<cv::Point3f> rotatedVertices;
+    cv::Mat rotationMatrix;
+    cv::Rodrigues(this->rotation, rotationMatrix);
+
+    
+    for (const auto& vertex : this->vertices) {
+        cv::Point3f translatedVertex = vertex - center;//center
+        cv::Mat vertexMat = (cv::Mat_<float>(3, 1) << translatedVertex.x, translatedVertex.y, translatedVertex.z);
+        cv::Mat rotatedVertexMat = rotationMatrix * vertexMat;
+        rotatedVertices.push_back(cv::Point3f(rotatedVertexMat) + center);
+    }
+    this->vertices = rotatedVertices;
 
 }
 
@@ -129,6 +153,13 @@ cv::Point3f Box3d::get_position(){
     return this->position;
 }
 
+cv::Point3f Box3d::get_size(){
+    return this->size;
+}
+
+cv::Point3f Box3d::get_rotation(){
+    return this->rotation;
+}
 int Box3d::get_cls(){
     return this->cls;
 }
@@ -160,7 +191,7 @@ void Annotation::box_clean(){
 void Annotation::configure_box(
         int box_id, 
         cv::Point3f position = cv::Point3f(0,0,0), 
-        cv::Point3f rotation = cv::Point3f(0,0,0), 
+        cv::Vec3f rotation = cv::Vec3f(0,0,0), 
         cv::Vec3f size = cv::Vec3f(0,0,0)
         )
 {

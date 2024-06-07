@@ -39,7 +39,7 @@ class Box3d{
 private:
     int cls; //class 
     cv::Point3f position;
-    cv::Point3f rotation;    
+    cv::Vec3f rotation;    
     cv::Vec3f size;
     std::vector<cv::Point3f> vertices; //11 vertice
 public:
@@ -51,7 +51,9 @@ public:
     std::vector<cv::Point3f> get_vertex();// return the vertices
     int get_cls();
     cv::Point3f get_position();
-    void configure_box(cv::Point3f, cv::Point3f , cv::Vec3f);
+    cv::Point3f get_size();
+    cv::Point3f get_rotation();
+    void configure_box(cv::Point3f, cv::Vec3f , cv::Vec3f);
     //change the size, position, roatation of the box object 
 };
 
@@ -72,7 +74,7 @@ public:
     void configure_box(
         int box_id, 
         cv::Point3f position, 
-        cv::Point3f rotation, 
+        cv::Vec3f rotation, 
         cv::Vec3f size
     );
     Box3d& get_box(int box_id);
