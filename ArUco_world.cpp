@@ -2,15 +2,16 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/matx.hpp>
 #include <filesystem>
-#include <string>
-
 #include <vector>
 #include <map>
 #include <tuple>
 
+
+
 //my include
 #include "DataLoader.h"
 #include "LabelTool.h"
+#include "Annotation.h"
 
 namespace fs = std::filesystem;
 //using namespace cv;
@@ -62,11 +63,12 @@ void test_annotation(LabelTool& labeltool){
         cv::waitKey(0);
     }
     */
-    labeltool.get_anno().box_spawn(); //generate first box
-    cv::imshow("test", labeltool.imshow_with_label(20));
-    cv::waitKey(0);
+    labeltool.get_anno().box_spawn(int(cls::foup)); //generate first box
+    labeltool.imshow_with_label(20);
+    //cv::imshow("test", labeltool.imshow_with_label(20));
+    //cv::waitKey(0);
 
-    labeltool.get_anno().box_spawn(); //generate second box and configure
+    labeltool.get_anno().box_spawn(int(cls::foup)); //generate second box and configure
     labeltool.get_anno().configure_box(
         1, 
         cv::Point3f(0.1,0,0.1), 
@@ -74,15 +76,19 @@ void test_annotation(LabelTool& labeltool){
         cv::Vec3f(0,0,0)
         );
 
-    cv::imshow("test", labeltool.imshow_with_label(20));
-    cv::waitKey(0);
+    labeltool.imshow_with_label(20);
+    //cv::imshow("test", labeltool.imshow_with_label(20));
+    //cv::waitKey(0);
 
     labeltool.get_anno().box_remove(0);
-    cv::imshow("test", labeltool.imshow_with_label(20));
-    cv::waitKey(0);
+    labeltool.imshow_with_label(20);
+
+    //cv::imshow("test", labeltool.imshow_with_label(20));
+    //cv::waitKey(0);
 
 }
-int main(int argc, char** argv )
+//
+int main_(int argc, char** argv )
 {
     
 

@@ -2,13 +2,7 @@
 
 #include <iostream>
 #include <wx/wx.h>
-#include "Communicate.h"
-#include "simple.h"
-#include "menu.h"
-#include "toolbar.h"
-#include "Sizer.h"
-#include "border.h"
-#include "align.h"
+
 
 #include "DataReader.h"
 class MyApp : public wxApp

@@ -91,6 +91,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     wxBoxSizer *vbox_select = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer *hbox0_5  = new wxBoxSizer(wxHORIZONTAL);
+    
     wxBoxSizer* vbox_stride = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox_rotation = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox_size = new wxBoxSizer(wxVERTICAL);
@@ -115,6 +116,8 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
     wxBoxSizer *hbox2 = new wxBoxSizer(wxHORIZONTAL);// choose the image
     
+    wxBoxSizer *hbox3 = new wxBoxSizer(wxHORIZONTAL);
+
     //* set bounding box [hbox0]
     cls_select = new wxTextCtrl(paintPanel, ID_CLS_SELECT, "", wxDefaultPosition, wxDefaultSize);
     box_spawn  = new wxButton(paintPanel, ID_BOX_SPAWN, wxT(" BoxSpawn "), wxDefaultPosition);
@@ -192,6 +195,9 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     next_10_image = new wxButton(paintPanel, ID_NEXT10_IMG, wxT("->10"));
     remove_image = new wxButton(paintPanel, ID_REMOVE_IMG, wxT("Remove"));
 
+    //* json
+    save_json = new wxButton(paintPanel, ID_SAVE_JSON, wxT("SaveJson"));
+    load_json = new wxButton(paintPanel, ID_LOAD_JSON, wxT("LoadJson"));
 
 
     //* set box
@@ -265,15 +271,15 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     hbox_rxyz->Add(vbox_ry);
     hbox_rxyz->Add(vbox_rz);
 
-    //TODO
+    
     vbox_xyz->Add(stride_val,0,wxALIGN_CENTER);
     vbox_xyz->Add(stride_text,0,wxALIGN_CENTER);
     vbox_xyz->Add(hbox_xyz,0,wxALIGN_CENTER);
-    //TODO
+    
     vbox_whd->Add(size_val,0,wxALIGN_CENTER);
     vbox_whd->Add(size_text,0,wxALIGN_CENTER);
     vbox_whd->Add(hbox_whd,0,wxALIGN_CENTER);
-    //TODO
+
     vbox_rxyz->Add(rotation_val,0,wxALIGN_CENTER);
     vbox_rxyz->Add(rotation_text,0,wxALIGN_CENTER);
     vbox_rxyz->Add(hbox_rxyz,0,wxALIGN_CENTER);
@@ -293,6 +299,10 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     hbox2->Add(remove_image);
 
     vbox->Add(hbox2, 0 ,  wxEXPAND, 0);
+
+    hbox3->Add(save_json);
+    hbox3->Add(load_json);
+    vbox->Add(hbox3,0,wxEXPAND,0);
 
     paintPanel->SetSizer(vbox);
     //*set Event
@@ -357,6 +367,13 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     
     Connect(ID_REMOVE_IMG, wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(Annotator::OnRemoveClick));
+
+    //*json
+    Connect(ID_SAVE_JSON, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnSaveJson));
+    
+    Connect(ID_LOAD_JSON, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnLoadJson));
     ShowImage();
 }
 //* Set box *//
@@ -739,4 +756,43 @@ void Annotator::OnRemoveClick(wxCommandEvent & WXUNUSED(event)){
     std::cout << "remove image id: " << image_id << std::endl;
     labeltool->remove_imgdat(image_id);
     ShowImage(box_id);
+}
+
+void Annotator::OnSaveJson(wxCommandEvent & WXUNUSED(event)){
+    wxDirDialog dirDialog(this, "Choose a directory", wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+
+    if (dirDialog.ShowModal() == wxID_OK)
+    {
+        wxString dirPath = dirDialog.GetPath();
+        //wxMessageBox("Selected directory: " + dirPath, "Info", wxOK | wxICON_INFORMATION);
+        labeltool->get_anno().dumpToJson(dirPath.ToStdString());
+        std::cout << "save json file to " << dirPath.ToStdString() << std::endl;
+    }
+    
+   
+}
+
+void Annotator::OnLoadJson(wxCommandEvent & WXUNUSED(event)){
+    wxFileDialog openFileDialog(this, _("Open JSON File"), "", "",
+                                     "JSON files (*.json)|*.json", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+    if (openFileDialog.ShowModal() == wxID_CANCEL) {
+            return; // the user changed their mind
+    }else{
+        std::string filename = openFileDialog.GetPath().ToStdString();
+        std::cout << "loading json file from " << filename << std::endl;
+        int err = labeltool->get_anno().LoadJson(filename);
+        if(err)
+            wxLogError("failed to load json");
+        else{
+            std::cout << "Successfully load json file from " << filename << std::endl;
+            box_select->Clear();
+            for(int i=0; i<labeltool->get_anno().box_number();i++){
+                box_select->Append(wxString::Format("box id: %d cls: %d", i, labeltool->get_anno().get_box(i).get_cls()));
+            }
+            ShowImage();
+        }
+
+    }
+    
 }

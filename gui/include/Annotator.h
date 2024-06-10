@@ -88,6 +88,11 @@ public:
     wxButton * next_image;
     wxButton * remove_image;
     wxStaticText * img_id_text;// = new wxStaticText(this, -1, wxT("0"),
+
+    //* json
+    wxButton * save_json; 
+    wxButton* load_json;
+
     int pos;//slider value
 
     //*set box
@@ -125,6 +130,10 @@ public:
     void OnPrevious10Click(wxCommandEvent & WXUNUSED(event));
     void OnNext10Click(wxCommandEvent & WXUNUSED(event));
     void OnRemoveClick(wxCommandEvent & WXUNUSED(event));
+
+    //*image
+    void OnSaveJson(wxCommandEvent & WXUNUSED(event));
+    void OnLoadJson(wxCommandEvent & WXUNUSED(event));
 };
 const int ID_CLS_SELECT = 108;
 const int ID_BOX_SPAWN = 105;
@@ -158,6 +167,8 @@ const int ID_RY_MINUS = 1124;
 const int ID_RZ_PLUS = 1125;
 const int ID_RZ_MINUS = 1126;
 
+const int ID_SAVE_JSON = 123;
+const int ID_LOAD_JSON = 122;
 //const int ID_STRIDE_TEXT = 127;
 //const int ID_SIZE_TEXT = 128;
 //const int ID_ROTATE_TEXT = 129;
