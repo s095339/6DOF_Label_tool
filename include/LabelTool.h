@@ -76,6 +76,8 @@ public:
 
     int get_data_length();// get the number of imagedata
     void generate_annotation();
+
+    void remove_imgdat(int);
 };
 
 

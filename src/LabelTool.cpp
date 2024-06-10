@@ -221,7 +221,7 @@ void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int i
     int deleted = 0;
     int count = 0;
     for(int i=0; i<dataloader.length(); i+=interval){
-        std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
+        //std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
         ImageData imgdat(dataloader[i], &intrinsic, &dist);// &(this->intrinsic) &(this->dist)
         int flag = imgdat.calculate_extrinsic(refMarkerArray, keep_in_mem);
         if(flag == 1) this->data_list.push_back(imgdat);
@@ -279,7 +279,12 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
 
         
         //visualize box 
+        idx = 1;
         for(auto& pt : pts_camera){
+            if(idx<9)cv::putText(
+                img, std::to_string(idx++),pt+cv::Point2f(2,2), 1, 2, cv::Scalar(0,255,255),2
+                );
+
             cv::circle(img, pt, 2, cv::Scalar(0,128,128));
         }
 
@@ -299,8 +304,9 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
         cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(0,0,255),2);
 
         if(i == show_selected_box_direction){
-            cv::arrowedLine(img,pts_camera[9],pts_camera[11], cv::Scalar(255,0,0),2);
-            cv::arrowedLine(img,pts_camera[10],pts_camera[12], cv::Scalar(0,255,0),2);
+            cv::arrowedLine(img,pts_camera[8],pts_camera[9], cv::Scalar(255,0,0),3,7);
+            cv::arrowedLine(img,pts_camera[8],pts_camera[10], cv::Scalar(0,255,0),3,7);
+            cv::arrowedLine(img,pts_camera[8],pts_camera[11], cv::Scalar(0,0,255),3,7);
         }
     }
 
@@ -313,4 +319,10 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
 void LabelTool::generate_annotation(){
 
     std::cout << "[todo] Generate annotation" << std::endl;
+}
+
+void LabelTool::remove_imgdat(int idx){
+    //this->Box_list.erase(this->Box_list.begin() + box_id);
+    this->data_list.erase(this->data_list.begin()+idx);
+
 }
