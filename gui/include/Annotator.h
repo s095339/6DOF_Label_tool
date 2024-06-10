@@ -16,6 +16,7 @@ private:
 // box configuration
     float stride = 0.05;
     float rotate = 5 * M_PI/180; 
+    float size_diff = 0.05;
 // image choose
     int image_id;
     int max_img;
@@ -33,6 +34,13 @@ public:
     wxButton *box_remove;
     wxComboBox *box_select;
     
+    //*stride
+    wxStaticText * stride_val;
+    wxStaticText * rotation_val;
+    wxStaticText * size_val;
+    wxTextCtrl *stride_text;
+    wxTextCtrl *rotation_text;
+    wxTextCtrl *size_text;
     //* configure bounding box
     //posision
         //x
@@ -78,6 +86,7 @@ public:
     wxButton * next_10_image;
     wxButton * previous_image;
     wxButton * next_image;
+    wxButton * remove_image;
     wxStaticText * img_id_text;// = new wxStaticText(this, -1, wxT("0"),
     int pos;//slider value
 
@@ -85,6 +94,9 @@ public:
     void OnBoxSpawn(wxCommandEvent & WXUNUSED(event));
     void OnBoxRemove(wxCommandEvent & WXUNUSED(event));
     void OnComboBoxSelect(wxCommandEvent& event);
+    //*stride
+    void OnTextUpdate(wxCommandEvent& event);
+
     //*box configuration
     //position
     void OnXPlus(wxCommandEvent & WXUNUSED(event));
@@ -112,7 +124,7 @@ public:
     void OnNextClick(wxCommandEvent & WXUNUSED(event));
     void OnPrevious10Click(wxCommandEvent & WXUNUSED(event));
     void OnNext10Click(wxCommandEvent & WXUNUSED(event));
-
+    void OnRemoveClick(wxCommandEvent & WXUNUSED(event));
 };
 const int ID_CLS_SELECT = 108;
 const int ID_BOX_SPAWN = 105;
@@ -123,6 +135,7 @@ const int ID_PRE_IMG = 101;
 const int ID_NEXT_IMG = 102;
 const int ID_PRE10_IMG = 103;
 const int ID_NEXT10_IMG = 104;
+const int ID_REMOVE_IMG = 121;
 
 const int ID_X_PLUS = 109;
 const int ID_X_MINUS = 110;
@@ -138,11 +151,16 @@ const int ID_H_MINUS = 118;
 const int ID_D_PLUS = 119;
 const int ID_D_MINUS = 120;
 
-const int ID_RX_PLUS = 121;
-const int ID_RX_MINUS = 122;
-const int ID_RY_PLUS = 123;
-const int ID_RY_MINUS = 124;
-const int ID_RZ_PLUS = 125;
-const int ID_RZ_MINUS = 126;
+const int ID_RX_PLUS = 1121;
+const int ID_RX_MINUS = 1122;
+const int ID_RY_PLUS = 1123;
+const int ID_RY_MINUS = 1124;
+const int ID_RZ_PLUS = 1125;
+const int ID_RZ_MINUS = 1126;
+
+//const int ID_STRIDE_TEXT = 127;
+//const int ID_SIZE_TEXT = 128;
+//const int ID_ROTATE_TEXT = 129;
 #endif
 
+ 

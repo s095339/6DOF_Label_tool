@@ -63,7 +63,7 @@ cv::Mat _intrinsic = (cv::Mat_<double>(3,3) << _intrinsic_para["fx"], 0.0, _intr
 cv::Mat _dist = (cv::Mat_<double>(1,5) << 0,0,0,0,0);
 
 Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_path)
-       : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(600,300))
+       : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(800,400))
 {   
 
     cv::namedWindow("Stream", cv::WINDOW_NORMAL);
@@ -85,8 +85,24 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer *hbox0 = new wxBoxSizer(wxHORIZONTAL);// put box and choose box
-    
+    wxBoxSizer *vbox_cls = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vbox_spawn = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vbox_remove = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vbox_select = new wxBoxSizer(wxVERTICAL);
+
+    wxBoxSizer *hbox0_5  = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer* vbox_stride = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vbox_rotation = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vbox_size = new wxBoxSizer(wxVERTICAL);
+
     wxBoxSizer *hbox1 = new wxBoxSizer(wxHORIZONTAL);// configure box
+    wxBoxSizer *vbox_xyz = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vbox_whd = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vbox_rxyz = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *hbox_xyz = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *hbox_whd = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *hbox_rxyz = new wxBoxSizer(wxHORIZONTAL);
+    
     wxBoxSizer* vbox_x = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox_y = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox_z = new wxBoxSizer(wxVERTICAL);
@@ -105,6 +121,17 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     box_remove = new wxButton(paintPanel, ID_BOX_REMOVE, wxT(" BoxRemove "), wxDefaultPosition);
     box_select = new wxComboBox(paintPanel, ID_COMBLEBOX, wxT("-no box-"));
 
+    //* stride
+    stride_val = new wxStaticText(paintPanel, wxID_ANY,  
+                            wxString::Format(wxT("position stride\n unit:(m) \n value:%f"), stride));
+    size_val = new wxStaticText(paintPanel, wxID_ANY, 
+                            wxString::Format(wxT("size stride\n unit:(m) \n value:%f"), size_diff));
+    rotation_val = new wxStaticText(paintPanel, wxID_ANY, 
+                            wxString::Format(wxT("rotation stride\n unit:(degree) \n value:%f"), rotate));
+
+    stride_text = new wxTextCtrl(paintPanel, wxID_ANY, "0.05" );
+    size_text = new wxTextCtrl(paintPanel, wxID_ANY, "0.05" );
+    rotation_text = new wxTextCtrl(paintPanel, wxID_ANY, "5" );
     //* Configure bounding box [hbox1]
     {// position
         //x
@@ -163,22 +190,37 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     next_image = new wxButton(paintPanel, ID_NEXT_IMG, wxT("->"));
     previous_10_image = new wxButton(paintPanel, ID_PRE10_IMG, wxT("10<-"));
     next_10_image = new wxButton(paintPanel, ID_NEXT10_IMG, wxT("->10"));
+    remove_image = new wxButton(paintPanel, ID_REMOVE_IMG, wxT("Remove"));
 
 
 
     //* set box
-    hbox0->Add(img_id_text);
-    hbox0->Add(box_spawn);
-    hbox0->Add(box_remove);
-    hbox0->Add(box_select);
+    vbox_cls->Add(img_id_text);
+    vbox_spawn->Add(box_spawn);
+    vbox_remove->Add(box_remove);
+    vbox_select->Add(box_select);
+    hbox0->Add(vbox_cls, 1, wxEXPAND);
+    hbox0->Add(vbox_spawn, 1, wxEXPAND);
+    hbox0->Add(vbox_remove, 1, wxEXPAND);
+    hbox0->Add(vbox_select, 1, wxEXPAND);
     vbox->Add(hbox0, 1, wxEXPAND);
-
+    //* stride
+    //vbox_stride->Add(stride_val);
+    //vbox_stride->Add(stride_text);
+    //vbox_size->Add(size_val);
+    //vbox_size->Add(size_text);
+    //vbox_rotation->Add(rotation_val);
+    //vbox_rotation->Add(rotation_text);
+    hbox0_5->Add(vbox_stride, 1, wxEXPAND);
+    hbox0_5->Add(vbox_size, 1, wxEXPAND);
+    hbox0_5->Add(vbox_rotation, 1, wxEXPAND);
+    vbox->Add(hbox0_5);
     //* configurate box
     //position
     vbox_x->Add(box_x_plus);
     vbox_x->Add(box_x_val);
     vbox_x->Add(box_x_minus);
-
+     
     vbox_y->Add(box_y_plus);
     vbox_y->Add(box_y_val);
     vbox_y->Add(box_y_minus);
@@ -211,15 +253,35 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     vbox_rz->Add(box_rz_val);
     vbox_rz->Add(box_rz_minus);
 
-    hbox1->Add(vbox_x, 1, wxEXPAND);
-    hbox1->Add(vbox_y, 1, wxEXPAND);
-    hbox1->Add(vbox_z, 1, wxEXPAND);
-    hbox1->Add(vbox_w, 1, wxEXPAND);
-    hbox1->Add(vbox_h, 1, wxEXPAND);
-    hbox1->Add(vbox_d, 1, wxEXPAND);
-    hbox1->Add(vbox_rx, 1, wxEXPAND);
-    hbox1->Add(vbox_ry, 1, wxEXPAND);
-    hbox1->Add(vbox_rz, 1, wxEXPAND);
+    hbox_xyz->Add(vbox_x);
+    hbox_xyz->Add(vbox_y);
+    hbox_xyz->Add(vbox_z);
+
+    hbox_whd->Add(vbox_w);
+    hbox_whd->Add(vbox_h);
+    hbox_whd->Add(vbox_d);
+    
+    hbox_rxyz->Add(vbox_rx);
+    hbox_rxyz->Add(vbox_ry);
+    hbox_rxyz->Add(vbox_rz);
+
+    //TODO
+    vbox_xyz->Add(stride_val,0,wxALIGN_CENTER);
+    vbox_xyz->Add(stride_text,0,wxALIGN_CENTER);
+    vbox_xyz->Add(hbox_xyz,0,wxALIGN_CENTER);
+    //TODO
+    vbox_whd->Add(size_val,0,wxALIGN_CENTER);
+    vbox_whd->Add(size_text,0,wxALIGN_CENTER);
+    vbox_whd->Add(hbox_whd,0,wxALIGN_CENTER);
+    //TODO
+    vbox_rxyz->Add(rotation_val,0,wxALIGN_CENTER);
+    vbox_rxyz->Add(rotation_text,0,wxALIGN_CENTER);
+    vbox_rxyz->Add(hbox_rxyz,0,wxALIGN_CENTER);
+
+    hbox1->Add(vbox_xyz, 1, wxEXPAND);
+    hbox1->Add(vbox_whd, 1, wxEXPAND);
+    hbox1->Add(vbox_rxyz, 1, wxEXPAND);
+    
 
     vbox->Add(hbox1 , 1, wxEXPAND);
 
@@ -228,6 +290,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     hbox2->Add(img_id_text);
     hbox2->Add(next_image);
     hbox2->Add(next_10_image);
+    hbox2->Add(remove_image);
 
     vbox->Add(hbox2, 0 ,  wxEXPAND, 0);
 
@@ -239,6 +302,8 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
       wxCommandEventHandler(Annotator::OnBoxRemove));
     box_select->Connect(ID_COMBLEBOX, wxEVT_COMMAND_COMBOBOX_SELECTED,
         wxCommandEventHandler(Annotator::OnComboBoxSelect), NULL, this);
+    //* stride
+    Connect(wxID_ANY, wxEVT_COMMAND_TEXT_UPDATED,wxCommandEventHandler(Annotator::OnTextUpdate)); 
     //* box configuration
     //position
     Connect(ID_X_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
@@ -290,6 +355,8 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     Connect(ID_NEXT10_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnNext10Click));
     
+    Connect(ID_REMOVE_IMG, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnRemoveClick));
     ShowImage();
 }
 //* Set box *//
@@ -351,7 +418,38 @@ void Annotator::OnComboBoxSelect(wxCommandEvent& event)
     ShowImage(box_id);
 }
 
+//* stride          *//
 
+void Annotator::OnTextUpdate(wxCommandEvent& event){
+    try{
+        stride = stof(stride_text->GetValue().ToStdString());
+        //std::cout << "change position stride to "<< stride << std::endl; 
+        stride_val->SetLabelText(
+            wxString::Format(wxT("position stride\n unit:(m) \n value:%f"), stride)
+        );
+    }catch(const std::exception& e){
+        //wxLogError("Invalid input: Please input Number");
+        stride = 0.05;
+    }
+    try{
+        rotate = stof(rotation_text->GetValue().ToStdString())*M_PI/180;
+        rotation_val->SetLabelText(
+            wxString::Format(wxT("rotation stride\n unit:(degree) \n value:%f"), rotate/M_PI*180)
+        );
+    }catch(const std::exception& e){
+        //wxLogError("Invalid input: Please input Number");
+        rotate = 5 * M_PI/180; 
+    }
+    try{
+        size_diff = stof(size_text->GetValue().ToStdString());
+        size_val->SetLabelText(
+            wxString::Format(wxT("size stride\n unit:(m) \n value:%f"), size_diff)
+        );
+    }catch(const std::exception& e){
+        //wxLogError("Invalid input: Please input Number");
+        size_diff = 0.05;
+    }
+}
 //* configurate box *//
 //position
 
@@ -424,7 +522,7 @@ void Annotator::OnWPlus(wxCommandEvent & WXUNUSED(event)){
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,0,0), 
-                                    cv::Point3f(stride,0,0)
+                                    cv::Point3f(size_diff,0,0)
     );
 
     ShowImage(box_id);
@@ -432,9 +530,9 @@ void Annotator::OnWPlus(wxCommandEvent & WXUNUSED(event)){
 }
 void Annotator::OnWMinus(wxCommandEvent & WXUNUSED(event)){
     labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(-stride, 0, 0), 
+                                    cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,0,0), 
-                                    cv::Point3f(-stride,0,0)
+                                    cv::Point3f(-size_diff,0,0)
     );
 
     ShowImage(box_id);
@@ -442,9 +540,9 @@ void Annotator::OnWMinus(wxCommandEvent & WXUNUSED(event)){
 }
 void Annotator::OnHPlus(wxCommandEvent & WXUNUSED(event)){
     labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
+                                    cv::Point3f(0, size_diff/2, 0), //確保箱子還是放在地板上
                                     cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,stride,0)
+                                    cv::Point3f(0,size_diff,0)
     );
 
     ShowImage(box_id);
@@ -452,9 +550,9 @@ void Annotator::OnHPlus(wxCommandEvent & WXUNUSED(event)){
 }
 void Annotator::OnHMinus(wxCommandEvent & WXUNUSED(event)){
     labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
+                                    cv::Point3f(0, -size_diff/2, 0), //確保箱子還是放在地板上
                                     cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,-stride,0)
+                                    cv::Point3f(0,-size_diff,0)
     );
 
     ShowImage(box_id);
@@ -464,7 +562,7 @@ void Annotator::OnDPlus(wxCommandEvent & WXUNUSED(event)){
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,stride)
+                                    cv::Point3f(0,0,size_diff)
     );
 
     ShowImage(box_id);
@@ -474,7 +572,7 @@ void Annotator::OnDMinus(wxCommandEvent & WXUNUSED(event)){
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,-stride)
+                                    cv::Point3f(0,0,-size_diff)
     );
 
     ShowImage(box_id);
@@ -485,7 +583,7 @@ void Annotator::OnDMinus(wxCommandEvent & WXUNUSED(event)){
 void Annotator::OnRXPlus(wxCommandEvent & WXUNUSED(event)){
     //float rotate_angle = 5.0;
     //float rotate_x =  3.14159265358979323846/180.0 * rotate_angle; 
-    std::cout << "rotate!" << std::endl;
+    std::cout << "rotateRX" << std::endl;
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(rotate,0,0), 
@@ -496,6 +594,7 @@ void Annotator::OnRXPlus(wxCommandEvent & WXUNUSED(event)){
     updateLabel();
 }
 void Annotator::OnRXMinus(wxCommandEvent & WXUNUSED(event)){
+    std::cout << "rotate-RX" << std::endl;
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(-rotate,0,0), 
@@ -506,6 +605,7 @@ void Annotator::OnRXMinus(wxCommandEvent & WXUNUSED(event)){
     updateLabel();
 }
 void Annotator::OnRYPlus(wxCommandEvent & WXUNUSED(event)){
+    std::cout << "rotateRY" << std::endl;
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,rotate,0), 
@@ -516,6 +616,7 @@ void Annotator::OnRYPlus(wxCommandEvent & WXUNUSED(event)){
     updateLabel();
 }
 void Annotator::OnRYMinus(wxCommandEvent & WXUNUSED(event)){
+    std::cout << "rotate-RY" << std::endl;
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,-rotate,0), 
@@ -526,6 +627,7 @@ void Annotator::OnRYMinus(wxCommandEvent & WXUNUSED(event)){
     updateLabel();
 }
 void Annotator::OnRZPlus(wxCommandEvent & WXUNUSED(event)){
+    std::cout << "rotateRZ" << std::endl;
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,0,rotate), 
@@ -536,6 +638,7 @@ void Annotator::OnRZPlus(wxCommandEvent & WXUNUSED(event)){
     updateLabel();
 }
 void Annotator::OnRZMinus(wxCommandEvent & WXUNUSED(event)){
+    std::cout << "rotate-RZ" << std::endl;
     labeltool->get_anno().configure_box(this->box_id, 
                                     cv::Point3f(0, 0, 0), 
                                     cv::Point3f(0,0,-rotate), 
@@ -620,14 +723,20 @@ void Annotator::updateLabel(){
     );
 
     box_rx_val->SetLabelText(
-        wxString::Format(wxT("%f"), rotate.x)
+        wxString::Format(wxT("%f"), 180*rotate.x/M_PI)
     );
 
     box_ry_val->SetLabelText(
-        wxString::Format(wxT("%f"), rotate.y)
+        wxString::Format(wxT("%f"), 180*rotate.y/M_PI)
     );
 
     box_rz_val->SetLabelText(
-        wxString::Format(wxT("%f"), rotate.z)
+        wxString::Format(wxT("%f"), 180*rotate.z/M_PI)
     );
+}
+
+void Annotator::OnRemoveClick(wxCommandEvent & WXUNUSED(event)){
+    std::cout << "remove image id: " << image_id << std::endl;
+    labeltool->remove_imgdat(image_id);
+    ShowImage(box_id);
 }
