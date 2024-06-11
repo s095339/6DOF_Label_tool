@@ -49,14 +49,16 @@ Box3d::Box3d(
     rear = cz - depth / 2.0;
 
     this->vertices = {
-        cv::Point3f(left, bottom, rear),
-        cv::Point3f(left, bottom, front),
-        cv::Point3f(left, top, rear),
-        cv::Point3f(left, top, front),
+       
         cv::Point3f(right, bottom, rear),
         cv::Point3f(right, bottom, front),
         cv::Point3f(right, top, rear),
         cv::Point3f(right, top, front),
+
+        cv::Point3f(left, bottom, rear),
+        cv::Point3f(left, bottom, front),
+        cv::Point3f(left, top, rear),
+        cv::Point3f(left, top, front),
 
         //center
         cv::Point3f(cx, cy, cz),
@@ -220,14 +222,17 @@ void Box3d::configure_box(
     rear = cz - depth / 2.0;
 
     this->vertices = {
-        cv::Point3f(left, bottom, rear),
-        cv::Point3f(left, bottom, front),
-        cv::Point3f(left, top, rear),
-        cv::Point3f(left, top, front),
         cv::Point3f(right, bottom, rear),
         cv::Point3f(right, bottom, front),
         cv::Point3f(right, top, rear),
         cv::Point3f(right, top, front),
+        
+        cv::Point3f(left, bottom, rear),
+        cv::Point3f(left, bottom, front),
+        cv::Point3f(left, top, rear),
+        cv::Point3f(left, top, front)
+        ,
+        
 
         //center
         cv::Point3f(cx, cy, cz),
@@ -407,6 +412,7 @@ int Annotation::LoadJson(const std::string& filename){
         cv::Vec3f size(item["size"][0], item["size"][1], item["size"][2]);
         
         this->box_spawn(cls, position, rotation, size);
+        
     }
     return 0;
 }
@@ -430,7 +436,7 @@ void Annotation::dumpToJson(const std::string& filename){
 
     j["name"] = "Global Annotation";
 
-    std::cout <<"name OK" << std::endl;
+    //std::cout <<"name OK" << std::endl;
 
     j["box_list"] = json::array();
 
@@ -439,7 +445,7 @@ void Annotation::dumpToJson(const std::string& filename){
             this->get_box(i).box_to_json(i)
             );
     }
-    std::cout <<"boxlist OK" << std::endl;
+    //std::cout <<"boxlist OK" << std::endl;
 
     if (file.is_open()) {
         file << j.dump(4); // Pretty print with 4 spaces
