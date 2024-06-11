@@ -33,7 +33,8 @@ public:
     wxButton *box_spawn;
     wxButton *box_remove;
     wxComboBox *box_select;
-    
+    wxButton *box_copy;
+
     //*stride
     wxStaticText * stride_val;
     wxStaticText * rotation_val;
@@ -99,6 +100,8 @@ public:
     void OnBoxSpawn(wxCommandEvent & WXUNUSED(event));
     void OnBoxRemove(wxCommandEvent & WXUNUSED(event));
     void OnComboBoxSelect(wxCommandEvent& event);
+    void OnBoxCopy(wxCommandEvent & WXUNUSED(event));
+
     //*stride
     void OnTextUpdate(wxCommandEvent& event);
 
@@ -139,6 +142,7 @@ const int ID_CLS_SELECT = 108;
 const int ID_BOX_SPAWN = 105;
 const int ID_BOX_REMOVE = 106;
 const int ID_COMBLEBOX = 107;
+const int ID_BOX_COPY = 124;
 
 const int ID_PRE_IMG = 101;
 const int ID_NEXT_IMG = 102;

@@ -77,7 +77,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     labeltool->build_data_list(_refMarkerArray, 5);
 
     box_id = 0;
-    box_count = 0;
+    //box_count = 0;
     max_img = labeltool->get_data_length();
     image_id = 0;
     //arrangement===============================================
@@ -89,6 +89,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     wxBoxSizer *vbox_spawn = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer *vbox_remove = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer *vbox_select = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *vbox_copy = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer *hbox0_5  = new wxBoxSizer(wxHORIZONTAL);
     
@@ -123,6 +124,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     box_spawn  = new wxButton(paintPanel, ID_BOX_SPAWN, wxT(" BoxSpawn "), wxDefaultPosition);
     box_remove = new wxButton(paintPanel, ID_BOX_REMOVE, wxT(" BoxRemove "), wxDefaultPosition);
     box_select = new wxComboBox(paintPanel, ID_COMBLEBOX, wxT("-no box-"));
+    box_copy = new wxButton(paintPanel, ID_BOX_COPY, wxT("BoxCopy"));
 
     //* stride
     stride_val = new wxStaticText(paintPanel, wxID_ANY,  
@@ -205,10 +207,13 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     vbox_spawn->Add(box_spawn);
     vbox_remove->Add(box_remove);
     vbox_select->Add(box_select);
+    vbox_copy->Add(box_copy);
     hbox0->Add(vbox_cls, 1, wxEXPAND);
     hbox0->Add(vbox_spawn, 1, wxEXPAND);
     hbox0->Add(vbox_remove, 1, wxEXPAND);
     hbox0->Add(vbox_select, 1, wxEXPAND);
+    hbox0->Add(vbox_copy, 1, wxEXPAND);
+
     vbox->Add(hbox0, 1, wxEXPAND);
     //* stride
     //vbox_stride->Add(stride_val);
@@ -217,10 +222,6 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     //vbox_size->Add(size_text);
     //vbox_rotation->Add(rotation_val);
     //vbox_rotation->Add(rotation_text);
-    hbox0_5->Add(vbox_stride, 1, wxEXPAND);
-    hbox0_5->Add(vbox_size, 1, wxEXPAND);
-    hbox0_5->Add(vbox_rotation, 1, wxEXPAND);
-    vbox->Add(hbox0_5);
     //* configurate box
     //position
     vbox_x->Add(box_x_plus);
@@ -312,6 +313,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
       wxCommandEventHandler(Annotator::OnBoxRemove));
     box_select->Connect(ID_COMBLEBOX, wxEVT_COMMAND_COMBOBOX_SELECTED,
         wxCommandEventHandler(Annotator::OnComboBoxSelect), NULL, this);
+    Connect(ID_BOX_COPY, wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(Annotator::OnBoxCopy));
     //* stride
     Connect(wxID_ANY, wxEVT_COMMAND_TEXT_UPDATED,wxCommandEventHandler(Annotator::OnTextUpdate)); 
     //* box configuration
@@ -385,12 +387,12 @@ void Annotator::OnBoxSpawn(wxCommandEvent & WXUNUSED(event)){
             wxLogError("Number should >=  0");
             return;
         }
-        box_count ++;
+        //box_count ++;
         //box_id  = box_count -1; //set to latest box    
         labeltool->get_anno().box_spawn(cls);
         cout << "Box Spawn" << endl;
         
-        box_select->Append(wxString::Format("box id: %d cls: %d", box_count-1,cls ));
+        box_select->Append(wxString::Format("box id: %d cls: %d", labeltool->get_anno().box_number()-1,cls ));
 
         ShowImage();
 
@@ -407,7 +409,7 @@ void Annotator::OnBoxRemove(wxCommandEvent & WXUNUSED(event)){
     if (box_id != wxNOT_FOUND)
     {
         labeltool->get_anno().box_remove(box_id);
-        box_count--;
+        //box_count--;
 
         box_select->Clear();
         for(int i=0; i<labeltool->get_anno().box_number();i++){
@@ -422,6 +424,24 @@ void Annotator::OnBoxRemove(wxCommandEvent & WXUNUSED(event)){
     ShowImage();
 }
 
+void Annotator::OnBoxCopy(wxCommandEvent & WXUNUSED(event)){
+    if (box_id != wxNOT_FOUND)
+    {
+        std::cout << "Copy box id: " << box_id << std::endl;
+        int cls = labeltool->get_anno().get_box(box_id).get_cls();
+        cv::Point3f pos = labeltool->get_anno().get_box(box_id).get_position() + cv::Point3f(0.05,0,0.05);
+        cv::Point3f rot = labeltool->get_anno().get_box(box_id).get_rotation();
+        cv::Point3f size = labeltool->get_anno().get_box(box_id).get_size();
+        labeltool->get_anno().box_spawn(cls, pos, rot, size);
+        box_select->Append(wxString::Format("box id: %d cls: %d", labeltool->get_anno().box_number()-1,cls ));
+    }
+    else
+    {
+        wxMessageBox("No item selected", "Error", wxOK | wxICON_ERROR);
+        return;
+    }
+    ShowImage();
+}
 void Annotator::OnComboBoxSelect(wxCommandEvent& event)
 {
     std::cout << "Event Triggered" << std::endl;
@@ -775,6 +795,8 @@ void Annotator::OnSaveJson(wxCommandEvent & WXUNUSED(event)){
 void Annotator::OnLoadJson(wxCommandEvent & WXUNUSED(event)){
     wxFileDialog openFileDialog(this, _("Open JSON File"), "", "",
                                      "JSON files (*.json)|*.json", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    
+    labeltool->get_anno().box_clean();
 
     if (openFileDialog.ShowModal() == wxID_CANCEL) {
             return; // the user changed their mind
@@ -786,6 +808,8 @@ void Annotator::OnLoadJson(wxCommandEvent & WXUNUSED(event)){
             wxLogError("failed to load json");
         else{
             std::cout << "Successfully load json file from " << filename << std::endl;
+
+            //combo box
             box_select->Clear();
             for(int i=0; i<labeltool->get_anno().box_number();i++){
                 box_select->Append(wxString::Format("box id: %d cls: %d", i, labeltool->get_anno().get_box(i).get_cls()));
