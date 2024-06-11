@@ -12,14 +12,14 @@ class Annotator: public wxFrame
 private:
 // box setting
     int box_id;
-    int box_count;
+    //int box_count;
 // box configuration
     float stride = 0.05;
     float rotate = 5 * M_PI/180; 
     float size_diff = 0.05;
 // image choose
     int image_id;
-    int max_img;
+    //int max_img;
     void ShowImage(int show_selected_box_direction = -1);
     void updateLabel();
 public:
@@ -93,6 +93,7 @@ public:
     //* json
     wxButton * save_json; 
     wxButton* load_json;
+    wxButton* dumpDataset;
 
     int pos;//slider value
 
@@ -137,6 +138,8 @@ public:
     //*image
     void OnSaveJson(wxCommandEvent & WXUNUSED(event));
     void OnLoadJson(wxCommandEvent & WXUNUSED(event));
+    void OnDumpDataset(wxCommandEvent & WXUNUSED(event));
+
 };
 const int ID_CLS_SELECT = 108;
 const int ID_BOX_SPAWN = 105;
@@ -173,6 +176,7 @@ const int ID_RZ_MINUS = 1126;
 
 const int ID_SAVE_JSON = 123;
 const int ID_LOAD_JSON = 122;
+const int ID_DUMP_DATASET = 125;
 //const int ID_STRIDE_TEXT = 127;
 //const int ID_SIZE_TEXT = 128;
 //const int ID_ROTATE_TEXT = 129;

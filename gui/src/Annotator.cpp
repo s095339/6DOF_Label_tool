@@ -15,13 +15,15 @@
 #include "DataLoader.h"
 #include "LabelTool.h"
 #include "Annotation.h"
+#include <filesystem>
 
+namespace fs = std::filesystem;
 
 
 using namespace std;
 
 
-map<string, double> _intrinsic_para = {
+std::map<std::string, double> _intrinsic_para = {
     {"fx", 908.78692627},
     {"fy", 907.3694458},
     {"cx", 638.07818604},
@@ -71,14 +73,14 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     wxInitAllImageHandlers();
     // build LabelTool===============================
     this->dataloader = new DataLoader(dir_path);
-    dataloader->set_Camera_intrinsic(_intrinsic);
+    dataloader->set_Camera_intrinsic(_intrinsic_para);
     dataloader->set_Camera_dist(_dist);
     this->labeltool = new LabelTool(*dataloader);
-    labeltool->build_data_list(_refMarkerArray, 5);
+    labeltool->build_data_list(_refMarkerArray, 1);
 
     box_id = 0;
     //box_count = 0;
-    max_img = labeltool->get_data_length();
+    //max_img = labeltool->get_data_length();
     image_id = 0;
     //arrangement===============================================
     wxPanel *paintPanel = new wxPanel(this, -1);
@@ -200,6 +202,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     //* json
     save_json = new wxButton(paintPanel, ID_SAVE_JSON, wxT("SaveJson"));
     load_json = new wxButton(paintPanel, ID_LOAD_JSON, wxT("LoadJson"));
+    dumpDataset = new wxButton(paintPanel, ID_DUMP_DATASET, wxT("Dump Dataset"));
 
 
     //* set box
@@ -211,8 +214,9 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     hbox0->Add(vbox_cls, 1, wxEXPAND);
     hbox0->Add(vbox_spawn, 1, wxEXPAND);
     hbox0->Add(vbox_remove, 1, wxEXPAND);
-    hbox0->Add(vbox_select, 1, wxEXPAND);
     hbox0->Add(vbox_copy, 1, wxEXPAND);
+    hbox0->Add(vbox_select, 1, wxEXPAND);
+    
 
     vbox->Add(hbox0, 1, wxEXPAND);
     //* stride
@@ -303,6 +307,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
     hbox3->Add(save_json);
     hbox3->Add(load_json);
+    hbox3->Add(dumpDataset);
     vbox->Add(hbox3,0,wxEXPAND,0);
 
     paintPanel->SetSizer(vbox);
@@ -376,6 +381,8 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     
     Connect(ID_LOAD_JSON, wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(Annotator::OnLoadJson));
+    Connect(ID_DUMP_DATASET, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnDumpDataset));
     ShowImage();
 }
 //* Set box *//
@@ -687,8 +694,8 @@ void Annotator::OnRZMinus(wxCommandEvent & WXUNUSED(event)){
 }
 //* Choose Image *//
 void Annotator::OnNextClick(wxCommandEvent & WXUNUSED(event))
-{
-    image_id = (image_id < max_img-1 )? image_id + 1 : image_id;
+{   
+    image_id = (image_id < labeltool->get_data_length()-1 )? image_id + 1 : image_id;
     cout << "image_id:" << this->image_id << endl;
     img_id_text->SetLabel(wxString::Format(wxT(" %d "), image_id));
     //cv::imshow("Stream",labeltool->get_imgdat(image_id).get_image());
@@ -708,6 +715,7 @@ void Annotator::OnPreviousClick(wxCommandEvent & WXUNUSED(event))
 
 void Annotator::OnNext10Click(wxCommandEvent & WXUNUSED(event))
 {
+    int max_img = labeltool->get_data_length();
     image_id = (image_id < max_img-1-10 )? image_id + 10 : max_img;
     if(image_id>max_img-1) image_id = max_img-1;
 
@@ -819,4 +827,46 @@ void Annotator::OnLoadJson(wxCommandEvent & WXUNUSED(event)){
 
     }
     
+}
+
+void Annotator::OnDumpDataset(wxCommandEvent & WXUNUSED(event)){
+    wxDirDialog dirDialog(this, "Choose a directory", wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+    
+    if (dirDialog.ShowModal() == wxID_OK)
+    {
+        wxString storePath = dirDialog.GetPath();
+        std::cout << "Saving Dataset to " << storePath.ToStdString()<< std::endl;
+
+        wxTextEntryDialog textDialog(this, "Enter the name of the new directory:", "Directory Name");
+        if (textDialog.ShowModal() == wxID_CANCEL) {
+            return; // User canceled the dialog
+        }
+
+
+        wxString dirName = textDialog.GetValue();
+        fs::path fullPath = fs::path(storePath.ToStdString()) / dirName.ToStdString();
+        std::cout << "fullpath ok"<< std::endl;
+        // Create the directory
+        if (!fs::exists(fullPath)) {
+            if (fs::create_directory(fullPath)) {
+                
+
+                fs::path fullPath = fs::path(storePath.ToStdString()) / dirName.ToStdString();
+                std::cout << "fullpath :"<< std::string(fullPath)<< std::endl;
+                //wxMessageBox("Selected directory: " + dirPath, "Info", wxOK | wxICON_INFORMATION);
+
+                labeltool->dump_dataset_json(fullPath);
+                wxMessageBox("Directory created successfully!", "Success", wxOK | wxICON_INFORMATION);
+            } else {
+                wxMessageBox("Failed to create directory!", "Error", wxOK | wxICON_ERROR);
+                return;
+            }
+        } else {
+            wxMessageBox("Directory already exists!", "Error", wxOK | wxICON_ERROR);
+            return ;
+        }
+
+        
+    }
+
 }
