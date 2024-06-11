@@ -8,6 +8,13 @@
 #include <stdexcept>
 #include <algorithm>
 #include <tuple>
+#include <filesystem>
+#include <iomanip>
+#include <sstream>
+#include <fstream>
+namespace fs = std::filesystem;
+
+
 //non-menber function
 
 
@@ -17,9 +24,10 @@
 //************************//
 // ImageData              //
 //************************//
-ImageData::ImageData(std::string image_path, cv::Mat* const intr_ptr, cv::Mat* const dist_ptr)
+ImageData::ImageData(std::string image_path,std::map<std::string, double>intrinsic_para,  cv::Mat* const intr_ptr, cv::Mat* const dist_ptr)
 :image_path{image_path}, keep_in_mem{0}
 {
+    this->intrinsic_para = intrinsic_para;
     this->intrinsic_ptr = intr_ptr;
     this->dist_ptr = dist_ptr;
 
@@ -33,7 +41,9 @@ cv::Mat ImageData::get_image(){
     
 }
 
-
+void ImageData::set_intrinsic_para(std::map<std::string, double> intr_para){
+    this->intrinsic_para = intr_para;
+}
 
 int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray, int keep_in_mem)
 {   
@@ -56,9 +66,11 @@ int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray, int
     //std::cout<<"opencv version:"<<CV_VERSION;  // opencv 4.7.0
     //read image from path
     cv::Mat image = cv::imread(this->image_path, cv::IMREAD_COLOR);
+    
     cv::Mat img_gray;
     cv::cvtColor(image, img_gray, cv::COLOR_BGR2GRAY);
-
+    this->width = image.size[1];
+    this->height = image.size[0];;
     //python
     //aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_100)
     //parameters = aruco.DetectorParameters_create()
@@ -85,6 +97,7 @@ int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray, int
     
     //TODO: get extrinsic from multiple aruco markers
     int flag = this->_estimateCameraPose(refMarkerArray, markerIds, markerCorners);
+    
     return flag;
 }
 int ImageData::_estimateCameraPose(
@@ -181,7 +194,9 @@ int ImageData::_estimateCameraPose(
     cv::Vec3f rvecs, tvecs;
     int flag;
     if(objectPoints.size()>=4){
+        //std::cout << "pnp" << std::endl;
         flag = cv::solvePnP(objectPoints, imagePoints, *(this->intrinsic_ptr), *(this->dist_ptr), rvecs, tvecs);
+        //std::cout << "yoyo" << std::endl;
     }
 
     /*
@@ -204,12 +219,29 @@ std::tuple<cv::Vec3f, cv::Vec3f> ImageData::get_extrinsic(){
 std::string ImageData::get_image_path(){
     return this->image_path;
 }
+
+json ImageData::get_image_json() {
+    //std::cout << "goint to reat" << std::endl;
+    //std::cout << "it's ok" << std::endl;        
+    return {
+                {"rvec", {rvecs[0], rvecs[1], rvecs[2]}},
+                {"tvec", {tvecs[0], tvecs[1], tvecs[2]}},
+                {"height", height},
+                {"width", width},
+                {"intrinsics", {
+                    {"cx", intrinsic_para.at("cx")},
+                    {"cy", intrinsic_para.at("cy")},
+                    {"fx", intrinsic_para.at("fx")},
+                    {"fy", intrinsic_para.at("fy")}
+                }}
+            };
+}
 //************************//
 // LabelTool              //
 //************************//
 
 LabelTool::LabelTool(DataLoader& dataloader)
-:dataloader{dataloader}, intrinsic{dataloader.get_Camera_intrinsic()}, dist{dataloader.get_Camera_dist()}
+:dataloader{dataloader}, intrinsic{dataloader.get_Camera_intrinsic()}, dist{dataloader.get_Camera_dist()}, intrinsic_para{dataloader.get_camera_intrinsic_para()}
 {
     this->anno = Annotation();
 
@@ -217,12 +249,12 @@ LabelTool::LabelTool(DataLoader& dataloader)
 void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int interval,  int keep_in_mem){
     this->_set_coordinate_ref(refMarkerArray);
     // add all image 
-
+    std::cout << "build data list ... " << std::endl;
     int deleted = 0;
     int count = 0;
     for(int i=0; i<dataloader.length(); i+=interval){
-        //std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
-        ImageData imgdat(dataloader[i], &intrinsic, &dist);// &(this->intrinsic) &(this->dist)
+        ImageData imgdat(dataloader[i],this->intrinsic_para, &intrinsic, &dist);// &(this->intrinsic) &(this->dist)
+        std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
         int flag = imgdat.calculate_extrinsic(refMarkerArray, keep_in_mem);
         if(flag == 1) this->data_list.push_back(imgdat);
         else deleted++;
@@ -325,4 +357,84 @@ void LabelTool::remove_imgdat(int idx){
     //this->Box_list.erase(this->Box_list.begin() + box_id);
     this->data_list.erase(this->data_list.begin()+idx);
 
+}
+
+void LabelTool::dump_dataset_json(fs::path path){
+    int image_idx = 0;
+    for(ImageData & imgdat: this->data_list){ //每一個image data 會存一個json
+        
+        
+    
+        cv::Mat img = imgdat.get_image();
+        cv::Vec3f tvecs, rvecs;
+        tvecs = std::get<0>(imgdat.get_extrinsic());
+        rvecs = std::get<1>(imgdat.get_extrinsic());
+        //std::cout << "tvec rvec"<< std::endl;
+
+        
+        json j; 
+        j["camera_data"] = imgdat.get_image_json();
+       
+       // std::cout << "get cam data OK"<< std::endl;
+        j["objects"] = json::array();
+        //std::cout << "json::array() OK"<< std::endl;
+        for(int box_id = 0; box_id < this->anno.box_number(); box_id ++ ){ //每一個box
+            Box3d& box = this->anno.get_box(box_id);
+            std::vector<cv::Point3f> vertices = box.get_vertex();
+            //transformation box coordinate from world to image plane   
+            std::vector<cv::Point2f> pts_camera; 
+            cv::projectPoints(vertices,rvecs, tvecs, this->intrinsic, this->dist, pts_camera);
+            json obj;
+
+            //std::cout << "create obj"<< std::endl;
+            obj["class"] = box.get_cls();
+
+            obj["keypoints_3d"]= json::array();
+            obj["location"]= json::array();
+            obj["projected_cuboid"]= json::array();
+            //obj["quaternion_xyzw"] = "";//TODO
+            obj["scale"]= json::array();
+            
+
+            for(int i=0; i<9; i++){
+                int vertex_id = (i+8)%9;
+                //因為在objectron的label 中心點放在第一個 而我們的label中心點放第九個 要配合obejctron的label
+                
+                obj["keypoints_3d"].push_back({vertices[vertex_id].x, vertices[vertex_id].y, vertices[vertex_id].z});
+                obj["projected_cuboid"].push_back({
+                    int(pts_camera[vertex_id].x), 
+                    int(pts_camera[vertex_id].y)
+                    });
+            }
+            //std::cout << "push to array<< std"<<::std::endl;
+            
+            obj["location"]= {vertices[8].x, vertices[8].y, vertices[8].z};
+
+            
+            //obj["quaternion_xyzw"] = 
+            obj["scale"]= {box.get_size().x, box.get_size().y, box.get_size().z};
+
+            j["objects"].push_back(obj);
+
+        }
+
+        //store data
+        std::ostringstream oss;
+        oss << std::setw(5) << std::setfill('0') << image_idx;
+        std::string dataname = oss.str();
+
+        fs::path json_path = path / (dataname + ".json");
+        fs::path img_path = path / (dataname + ".png");
+        //cv::imwrite(img_path, img);
+
+        std::ofstream file(json_path);
+
+        if (file.is_open()) {
+            file << j.dump(4); // Pretty print with 4 spaces
+            file.close();
+            cv::imwrite(img_path, img);
+        } 
+        std::cout << "Save image and Json, filename = " << dataname <<::std::endl;
+        image_idx++;
+    }
 }

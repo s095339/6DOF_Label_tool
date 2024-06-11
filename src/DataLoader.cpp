@@ -37,11 +37,18 @@ DataLoader::DataLoader(std::string datapath)
 void DataLoader::set_Camera_intrinsic(cv::Mat intr){
     this->Camera_intrinsic = intr;
 }
+void DataLoader::set_Camera_intrinsic(map<string, double> intr_para){
+    this->instrinsic_para = intr_para;
+    this->Camera_intrinsic = (cv::Mat_<double>(3,3) << this->instrinsic_para["fx"], 0.0, this->instrinsic_para["cx"], 0.0, this->instrinsic_para["fy"] ,\
+                                                        this->instrinsic_para["cy"], 0.0, 0.0, 1.0);
+}
 
 cv::Mat DataLoader::get_Camera_intrinsic(){
     return this->Camera_intrinsic;
 }
-
+map<string, double> DataLoader::get_camera_intrinsic_para(){
+    return this->instrinsic_para;
+}
 void DataLoader::set_Camera_dist(cv::Mat dist){
     this->dist = dist;
 }
