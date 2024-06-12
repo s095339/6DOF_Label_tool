@@ -34,6 +34,11 @@ private:
     int height;
     int width;
 
+    //world_camera setting
+    //int aruco_dict;
+    //std::map<int, cv::Point3f> refMarkerArray;
+    //std::map<std::string, double> intrinsic_params;
+
     int _estimateCameraPose(
         std::map<int, cv::Point3f> refMarkerArray,
         std::vector<int> markerIds, 
@@ -45,12 +50,16 @@ public:
     //ImageData(ImageData && source); 
     //menber function
     void set_intrinsic_para(std::map<std::string, double>);//for dumping dataset to json
+    void set_aruco_dict(int);
+    void refMarkerArray(std::map<int, cv::Point3f>);
+     
     int calculate_extrinsic(
         std::map<int, cv::Point3f>, 
+        int,
         int keep_in_mem = 0
         );
     std::tuple<cv::Vec3f, cv::Vec3f> get_extrinsic();
-
+    
     cv::Mat get_image();
     std::string get_image_path();
     json get_image_json() ;
@@ -66,15 +75,15 @@ private:
     std::vector<ImageData> data_list;
 
     std::map<int, cv::Point3f> refMarkerArray;
-
-     //Annotation object
+    int aruco_dict;
+    //Annotation object
     Annotation anno;
 
 
-    void _set_coordinate_ref(std::map<int, cv::Point3f>);
+
 public:
     LabelTool(DataLoader&); //Constructor
-    void build_data_list(std::map<int, cv::Point3f>, int interval = 1, int keep_in_mem = 0);
+    void build_data_list(int interval = 1, int keep_in_mem = 0);
     
 
     ImageData get_imgdat(int);

@@ -11,7 +11,7 @@
 #include <opencv2/core/matx.hpp>
 #include <filesystem>
 ///////////////////////////////
-
+#include <opencv2/aruco.hpp>
 #include "DataLoader.h"
 #include "LabelTool.h"
 #include "Annotation.h"
@@ -23,47 +23,6 @@ namespace fs = std::filesystem;
 using namespace std;
 
 
-std::map<std::string, double> _intrinsic_para = {
-    {"fx", 908.78692627},
-    {"fy", 907.3694458},
-    {"cx", 638.07818604},
-    {"cy", 358.32138062}
-};
-
-map<int, cv::Point3f> _refMarkerArray = {
-    //===============================
-        {20, cv::Vec3f(0.0, 0.0, 0.0) },
-        {21, cv::Vec3f(0.5, 0.0, 0.0) },
-        {22, cv::Vec3f(0.5, 0.0, 0.7) },
-        {23, cv::Vec3f(0.0, 0.0, 0.7) },
-    //=={==, cv::Vec3f(=============) }===========
-        {25, cv::Vec3f(0.0, 0.0, 0.1) },
-        {26, cv::Vec3f(0.0, 0.0, 0.2) },
-        {27, cv::Vec3f(0.0, 0.0, 0.3) },
-        {28, cv::Vec3f(0.0, 0.0, 0.4) },
-        {29, cv::Vec3f(0.0, 0.0, 0.5) },
-        {30, cv::Vec3f(0.0, 0.0, 0.6) },
-    //=={==, cv::Vec3f(=============) }============
-        {14, cv::Vec3f(0.1, 0.0, 0.0) },
-        {24, cv::Vec3f(0.2, 0.0, 0.0) },
-        {19, cv::Vec3f(0.3, 0.0, 0.0) },
-    //=={=== cv::Vec3f(=============) }============
-        {7,  cv::Vec3f(0.5, 0.0, 0.1) },
-        {8,  cv::Vec3f(0.5, 0.0, 0.2) },
-        {9,  cv::Vec3f(0.5, 0.0, 0.3) },
-        {10, cv::Vec3f(0.5, 0.0, 0.4) },
-        {11, cv::Vec3f(0.5, 0.0, 0.5) },
-        {12, cv::Vec3f(0.5, 0.0, 0.6) },
-    //=={=== cv::Vec3f(=============) }=============
-        {15, cv::Vec3f(0.1, 0.0, 0.7) },
-        {16, cv::Vec3f(0.2, 0.0, 0.7) },
-        {17, cv::Vec3f(0.3, 0.0, 0.7) },
-        {18, cv::Vec3f(0.4, 0.0, 0.7) },
-};
-cv::Mat _intrinsic = (cv::Mat_<double>(3,3) << _intrinsic_para["fx"], 0.0, _intrinsic_para["cx"], 0.0, _intrinsic_para["fy"] ,\
-                                                        _intrinsic_para["cy"], 0.0, 0.0, 1.0);
-cv::Mat _dist = (cv::Mat_<double>(1,5) << 0,0,0,0,0);
-
 Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_path)
        : wxFrame(NULL, wxID_ANY, title, wxDefaultPosition, wxSize(800,400))
 {   
@@ -73,10 +32,9 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     wxInitAllImageHandlers();
     // build LabelTool===============================
     this->dataloader = new DataLoader(dir_path);
-    dataloader->set_Camera_intrinsic(_intrinsic_para);
-    dataloader->set_Camera_dist(_dist);
     this->labeltool = new LabelTool(*dataloader);
-    labeltool->build_data_list(_refMarkerArray, 1);
+    int interval = 1;
+    labeltool->build_data_list(interval);
 
     box_id = 0;
     //box_count = 0;

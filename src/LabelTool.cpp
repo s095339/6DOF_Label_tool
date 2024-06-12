@@ -45,7 +45,7 @@ void ImageData::set_intrinsic_para(std::map<std::string, double> intr_para){
     this->intrinsic_para = intr_para;
 }
 
-int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray, int keep_in_mem)
+int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray,int aruco_dict,  int keep_in_mem)
 {   
     /*
     Parameter
@@ -78,7 +78,7 @@ int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray, int
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
     cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
-    cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
+    cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(aruco_dict);
     cv::aruco::ArucoDetector detector(dictionary, detectorParams);
     detector.detectMarkers(image, markerCorners, markerIds, rejectedCandidates);
     /*
@@ -241,21 +241,28 @@ json ImageData::get_image_json() {
 //************************//
 
 LabelTool::LabelTool(DataLoader& dataloader)
-:dataloader{dataloader}, intrinsic{dataloader.get_Camera_intrinsic()}, dist{dataloader.get_Camera_dist()}, intrinsic_para{dataloader.get_camera_intrinsic_para()}
+:
+dataloader{dataloader}, 
+intrinsic_para{dataloader.get_camera_intrinsic_para()},
+intrinsic{dataloader.get_Camera_intrinsic()},
+dist{dataloader.get_Camera_dist()},
+aruco_dict{dataloader.get_aruco_dict()},
+refMarkerArray{dataloader.get_refMarkerArray()},
+anno{Annotation()}
 {
-    this->anno = Annotation();
-
 }
-void LabelTool::build_data_list(std::map<int, cv::Point3f> refMarkerArray, int interval,  int keep_in_mem){
-    this->_set_coordinate_ref(refMarkerArray);
+
+void LabelTool::build_data_list(int interval,  int keep_in_mem){
+
+    
     // add all image 
     std::cout << "build data list ... " << std::endl;
     int deleted = 0;
     int count = 0;
     for(int i=0; i<dataloader.length(); i+=interval){
-        ImageData imgdat(dataloader[i],this->intrinsic_para, &intrinsic, &dist);// &(this->intrinsic) &(this->dist)
+        ImageData imgdat(dataloader[i],this->intrinsic_para, &(this->intrinsic), &(this->dist));// &(this->intrinsic) &(this->dist)
         std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
-        int flag = imgdat.calculate_extrinsic(refMarkerArray, keep_in_mem);
+        int flag = imgdat.calculate_extrinsic(refMarkerArray, this->aruco_dict, keep_in_mem);
         if(flag == 1) this->data_list.push_back(imgdat);
         else deleted++;
     }
@@ -275,9 +282,7 @@ ImageData LabelTool::get_imgdat(int idx){
     return this->data_list.at(idx);
 }
 
-void LabelTool::_set_coordinate_ref(std::map<int, cv::Point3f> refMarkerArray){
-    this->refMarkerArray = refMarkerArray;
-}
+
 
 Annotation& LabelTool::get_anno(){
     return this->anno;
