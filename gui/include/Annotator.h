@@ -13,6 +13,7 @@ private:
 // box setting
     int box_id;
     //int box_count;
+
 // box configuration
     float stride = 0.05;
     float rotate = 5 * M_PI/180; 
@@ -35,6 +36,9 @@ public:
     wxComboBox *box_select;
     wxButton *box_copy;
 
+    //* world setting
+    wxStaticText * world_degree;
+    wxButton * rotate_world; 
     //*stride
     wxStaticText * stride_val;
     wxStaticText * rotation_val;
@@ -102,7 +106,8 @@ public:
     void OnBoxRemove(wxCommandEvent & WXUNUSED(event));
     void OnComboBoxSelect(wxCommandEvent& event);
     void OnBoxCopy(wxCommandEvent & WXUNUSED(event));
-
+    //*world setting
+    void OnWorldRotate(wxCommandEvent & WXUNUSED(event));
     //*stride
     void OnTextUpdate(wxCommandEvent& event);
 
@@ -180,6 +185,9 @@ const int ID_DUMP_DATASET = 125;
 //const int ID_STRIDE_TEXT = 127;
 //const int ID_SIZE_TEXT = 128;
 //const int ID_ROTATE_TEXT = 129;
+
+const int ID_ROTATE_WORLD = 130;
+
 #endif
 
  

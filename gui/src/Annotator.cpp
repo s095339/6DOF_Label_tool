@@ -97,6 +97,9 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     stride_text = new wxTextCtrl(paintPanel, wxID_ANY, "0.05" );
     size_text = new wxTextCtrl(paintPanel, wxID_ANY, "0.05" );
     rotation_text = new wxTextCtrl(paintPanel, wxID_ANY, "5" );
+    //* world setting
+    rotate_world = new wxButton(paintPanel, ID_ROTATE_WORLD, wxT("rotate world"));
+    world_degree = new wxStaticText(paintPanel, wxID_ANY, "world degree = 0");
     //* Configure bounding box [hbox1]
     {// position
         //x
@@ -175,8 +178,11 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     hbox0->Add(vbox_copy, 1, wxEXPAND);
     hbox0->Add(vbox_select, 1, wxEXPAND);
     
-
     vbox->Add(hbox0, 1, wxEXPAND);
+    
+    hbox0_5->Add(rotate_world);
+    hbox0_5->Add(world_degree);
+    vbox->Add(hbox0_5, 1, wxEXPAND);
     //* stride
     //vbox_stride->Add(stride_val);
     //vbox_stride->Add(stride_text);
@@ -269,7 +275,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     vbox->Add(hbox3,0,wxEXPAND,0);
 
     paintPanel->SetSizer(vbox);
-    //*set Event
+    //*boxing setting
     Connect(ID_BOX_SPAWN, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnBoxSpawn));
     Connect(ID_BOX_REMOVE, wxEVT_COMMAND_BUTTON_CLICKED, 
@@ -277,6 +283,8 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     box_select->Connect(ID_COMBLEBOX, wxEVT_COMMAND_COMBOBOX_SELECTED,
         wxCommandEventHandler(Annotator::OnComboBoxSelect), NULL, this);
     Connect(ID_BOX_COPY, wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(Annotator::OnBoxCopy));
+    //* world setting
+    Connect(ID_ROTATE_WORLD, wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(Annotator::OnWorldRotate));
     //* stride
     Connect(wxID_ANY, wxEVT_COMMAND_TEXT_UPDATED,wxCommandEventHandler(Annotator::OnTextUpdate)); 
     //* box configuration
@@ -420,6 +428,21 @@ void Annotator::OnComboBoxSelect(wxCommandEvent& event)
     ShowImage(box_id);
 }
 
+//* world settig    *//
+void Annotator::OnWorldRotate(wxCommandEvent & WXUNUSED(event)){
+    double degree = labeltool->get_world_rotation();
+
+    if(degree >= 270){
+        degree = 0;
+    }else{
+        degree+=90;
+    }
+    this->labeltool->world_rotation(degree);
+    world_degree->SetLabelText(
+        wxString::Format(wxT("world degree = %f"), (float)degree)
+    );
+    ShowImage();
+}
 //* stride          *//
 
 void Annotator::OnTextUpdate(wxCommandEvent& event){
@@ -751,7 +774,7 @@ void Annotator::OnSaveJson(wxCommandEvent & WXUNUSED(event)){
     {
         wxString dirPath = dirDialog.GetPath();
         //wxMessageBox("Selected directory: " + dirPath, "Info", wxOK | wxICON_INFORMATION);
-        labeltool->get_anno().dumpToJson(dirPath.ToStdString());
+        labeltool->dump_annotaion_json(dirPath.ToStdString(), labeltool->get_world_rotation());
         std::cout << "save json file to " << dirPath.ToStdString() << std::endl;
     }
     
@@ -769,7 +792,7 @@ void Annotator::OnLoadJson(wxCommandEvent & WXUNUSED(event)){
     }else{
         std::string filename = openFileDialog.GetPath().ToStdString();
         std::cout << "loading json file from " << filename << std::endl;
-        int err = labeltool->get_anno().LoadJson(filename);
+        int err = labeltool->load_annotation_json(filename);
         if(err)
             wxLogError("failed to load json");
         else{
