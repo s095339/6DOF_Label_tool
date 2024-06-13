@@ -306,6 +306,27 @@ cv::Point3f Box3d::get_position(){
     return this->position;
 }
 
+void Box3d::rotate_world(double degree){
+
+    
+    double rad = degree * M_PI / 180.0;
+    double cosTheta = cos(rad);
+    double sinTheta = sin(rad);
+
+    double x,z;
+    x = this->position.x * cosTheta - this->position.z * sinTheta;
+    z = this->position.x * sinTheta + this->position.z * cosTheta;
+    this->position.x = x;
+    this->position.z = z;
+
+    for(auto & vertex : this->vertices){ 
+        x = vertex.x * cosTheta - vertex.z * sinTheta;
+        z = vertex.x * sinTheta + vertex.z * cosTheta;
+        vertex.x = x;
+        vertex.z = z;
+    }
+}
+
 cv::Point3f Box3d::get_size(){
     return this->size;
 }
@@ -393,10 +414,10 @@ Box3d& Annotation::get_box(int box_id){
 int Annotation::box_number(){
     return this->Box_list.size();
 }
-int Annotation::LoadJson(const std::string& filename){
+double Annotation::LoadJson(const std::string& filename){
     if (!fs::exists(filename)) {
         std::cerr << "File " << filename << " does not exist!" << std::endl;
-        return 1;
+        return -1;
     }
 
     // Read JSON from file
@@ -414,9 +435,15 @@ int Annotation::LoadJson(const std::string& filename){
         this->box_spawn(cls, position, rotation, size);
         
     }
-    return 0;
+    try{
+        return j["world_rotation"];
+    }catch(const std::exception& e){
+        return 0;
+    }
+
+   
 }
-void Annotation::dumpToJson(const std::string& filename){
+void Annotation::dumpToJson(const std::string& filename,  double world_rotation ){
     json j;
     
     std::string fullfilename = filename + "/box.json";
@@ -435,7 +462,7 @@ void Annotation::dumpToJson(const std::string& filename){
     std::ofstream file(fullfilename);
 
     j["name"] = "Global Annotation";
-
+    j["world_rotation"] = world_rotation;
     //std::cout <<"name OK" << std::endl;
 
     j["box_list"] = json::array();

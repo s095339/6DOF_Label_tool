@@ -9,6 +9,7 @@
 #include <opencv2/core/matx.hpp>
 
 #include "nlohmann/json.hpp"
+#include <cmath>
 using json = nlohmann::json;
 //***************************//
 //   Box3d                   //
@@ -45,6 +46,8 @@ private:
     cv::Vec3f size;
     std::vector<cv::Point3f> vertices; //11 vertice
     std::vector<cv::Point3f> boxVertices;
+
+    
 public:
     Box3d(  int cls,
             cv::Point3f position = cv::Point3f(0.2,0.1,0.2), 
@@ -54,6 +57,7 @@ public:
     std::vector<cv::Point3f> get_vertex();// return the vertices
     int get_cls();
     cv::Point3f get_position();
+    void rotate_world(double);
     cv::Point3f get_size();
     cv::Point3f get_rotation();
     void configure_box(cv::Point3f, cv::Vec3f , cv::Vec3f);
@@ -94,9 +98,11 @@ public:
     Box3d& get_box(int box_id);
     //void generate_Annotation();
     int box_number();
-    int LoadJson(const std::string& filename);
-    void dumpToJson(const std::string& filename = "../boxes.json");
+    double LoadJson(const std::string& filename);
+    void dumpToJson(const std::string& filename = "../boxes.json", double world_rotation = 0);
 };
+
+
 
 
 #endif
