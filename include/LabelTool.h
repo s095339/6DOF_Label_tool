@@ -44,6 +44,7 @@ private:
         std::vector<int> markerIds, 
         std::vector<std::vector<cv::Point2f>> corners
         );
+
 public:                             
     //constructor                                                
     ImageData(std::string,std::map<std::string, double>, cv::Mat* const, cv::Mat* const);
@@ -74,17 +75,22 @@ private:
     cv::Mat dist;
     std::vector<ImageData> data_list;
 
-    std::map<int, cv::Point3f> refMarkerArray;
-    int aruco_dict;
     //Annotation object
     Annotation anno;
+    double world_rotate_degree;// rotation world to avoid gimbal lock
+
+    //world camera setting
+    std::map<int, cv::Point3f> refMarkerArray;
+    int aruco_dict;
+    
 
 
 
 public:
     LabelTool(DataLoader&); //Constructor
     void build_data_list(int interval = 1, int keep_in_mem = 0);
-    
+    void world_rotation(double degree = 0);
+    double get_world_rotation(){ return this->world_rotate_degree; };
 
     ImageData get_imgdat(int);
     Annotation& get_anno();
@@ -96,8 +102,10 @@ public:
 
     void remove_imgdat(int);
     void dump_dataset_json(fs::path);
-};
 
+    void dump_annotaion_json(const std::string& filename,  double world_rotation );
+    int load_annotation_json(const std::string& filename);
+};
 
 
 

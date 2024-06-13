@@ -16,9 +16,16 @@ namespace fs = std::filesystem;
 
 
 //non-menber function
+void rotatePlane(cv::Point3f& point, double degree) {
+    double rad = degree * M_PI / 180.0;
+    double cosTheta = cos(rad);
+    double sinTheta = sin(rad);
 
-
-
+    double x = point.x * cosTheta - point.z * sinTheta;
+    double z = point.x * sinTheta + point.z * cosTheta;
+    point.x = x;
+    point.z = z;
+}
 //menber function
 
 //************************//
@@ -250,6 +257,7 @@ aruco_dict{dataloader.get_aruco_dict()},
 refMarkerArray{dataloader.get_refMarkerArray()},
 anno{Annotation()}
 {
+    this->world_rotate_degree = 0.0;
 }
 
 void LabelTool::build_data_list(int interval,  int keep_in_mem){
@@ -277,6 +285,33 @@ void LabelTool::build_data_list(int interval,  int keep_in_mem){
     
 }
 
+void LabelTool::world_rotation(double degree){
+    this->world_rotate_degree = degree;
+    std::cout << " before rotation "<< std::endl;
+    //for(const auto& [key, value] : refMarkerArray){
+    //        std::cout << "  " << key << ": " << value << std::endl;
+    //}
+    //轉世界
+    //std::cout << " after rotation "<< std::endl;
+    for(auto& [key, point] : this->refMarkerArray) {
+        rotatePlane(point, degree);
+    }
+
+    //for(const auto& [key, value] : refMarkerArray){
+    //        std::cout << "  " << key << ": " << value << std::endl;
+    //    }
+    //轉圖片
+    for(auto & imgdat:this->data_list){
+        imgdat.calculate_extrinsic(refMarkerArray, this->aruco_dict);//re-calculate
+    }
+    //轉箱子
+    for(int i=0; i<this->anno.box_number(); i++ ){
+        Box3d& box = this->anno.get_box(i);
+        //box.rotate_world(degree);
+    }
+
+
+}
 
 ImageData LabelTool::get_imgdat(int idx){
     return this->data_list.at(idx);
@@ -293,6 +328,19 @@ int LabelTool::get_data_length(){
 }
 cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
                                     // image id   //the id of the box 
+    //
+    cv::Point3f origin(0.0,0.0,0.0);
+    cv::Point3f xaxis(0.15,0.0,0.0);
+    cv::Point3f yaxis(0.0,-0.15,0.0);
+    cv::Point3f zaxis(0.0,0.0,0.15);
+    std::vector<cv::Point3f> axis_point = {   
+        origin,
+        xaxis,
+        yaxis,
+        zaxis
+    };
+
+   
     // get image data
     ImageData imgdat = this->get_imgdat(idx);
 
@@ -303,7 +351,12 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
     cv::Vec3f tvecs, rvecs;
     tvecs = std::get<0>(imgdat.get_extrinsic());
     rvecs = std::get<1>(imgdat.get_extrinsic());
-
+    //print origin axis
+    std::vector<cv::Point2f> pts_camera_axis; 
+    cv::projectPoints(axis_point,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_axis);
+    cv::arrowedLine(img,pts_camera_axis[0],pts_camera_axis[3], cv::Scalar(255,0,0),2);
+    cv::arrowedLine(img,pts_camera_axis[0],pts_camera_axis[2], cv::Scalar(0,255,0),2);
+    cv::arrowedLine(img,pts_camera_axis[0],pts_camera_axis[1], cv::Scalar(0,0,255),2);
     // get annotation data (box information)
     for(int i=0 ; i<this->anno.box_number(); i++)//iterate all box 
     {
@@ -441,5 +494,19 @@ void LabelTool::dump_dataset_json(fs::path path){
         } 
         std::cout << "Save image and Json, filename = " << dataname <<::std::endl;
         image_idx++;
+    }
+}
+
+void LabelTool::dump_annotaion_json(const std::string& filename,  double world_rotation ){
+    anno.dumpToJson(filename, this->world_rotate_degree);
+}
+int LabelTool::load_annotation_json(const std::string& filename){
+    double world_rot = anno.LoadJson(filename);
+    if(world_rot<0){
+        return 1;
+    }else{
+    this->world_rotate_degree = world_rot;
+    world_rotation(world_rot);
+        return 0;
     }
 }
