@@ -26,7 +26,6 @@ include_directories(
 
 # Add the executable
 add_executable(DisplayImage
-    ArUco_world.cpp 
     main.cpp
     src/DataLoader.cpp
     src/natural_sort_test.cpp
