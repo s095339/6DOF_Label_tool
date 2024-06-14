@@ -1,6 +1,5 @@
 #include "DataLoader.h"
 #include <iostream>
-#include <opencv2/opencv.hpp>
 #include "LabelTool.h"
 #include "Annotation.h"
 #include <opencv2/aruco.hpp>
@@ -12,6 +11,15 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+
+//calculate box's pose
+#include <opencv2/calib3d.hpp>
+#include <Eigen/Geometry>
+#include <opencv2/calib3d.hpp>
+#include <Eigen/Geometry>
+#include <opencv2/opencv.hpp>
+#include <eigen3/Eigen/Dense>
+#include <opencv2/core/eigen.hpp>
 namespace fs = std::filesystem;
 
 
@@ -453,15 +461,26 @@ void LabelTool::dump_dataset_json(fs::path path){
             //obj["quaternion_xyzw"] = "";//TODO
             obj["scale"]= json::array();
             
+            std::vector<cv::Point2f> pnp_box_2d; // 算box的PNP
+            std::vector<cv::Point3f> pnp_box_3d; // 算box的PNP
+            
 
+            //為了尊崇objectron的標註 他們的2D點跟3D盒子的八個頂點 左右是反過來的
+            int box_2d_point_order[] = {8,4,5,6,7,0,1,2,3};//8是中心點
+            int box_3d_point_order[] = {8,0,1,2,3,4,5,6,7};
             for(int i=0; i<9; i++){
-                int vertex_id = (i+8)%9;
+                int vertex_2d_id = box_2d_point_order[i];
+                int vertex_3d_id = box_3d_point_order[i];
+                //解算PNP時不用到中心點
+                if(i>0){
+                    pnp_box_2d.push_back(pts_camera[vertex_2d_id]);
+                    pnp_box_3d.push_back(vertices[vertex_3d_id]);
+                }
                 //因為在objectron的label 中心點放在第一個 而我們的label中心點放第九個 要配合obejctron的label
-                
-                obj["keypoints_3d"].push_back({vertices[vertex_id].x, vertices[vertex_id].y, vertices[vertex_id].z});
+                obj["keypoints_3d"].push_back({vertices[vertex_3d_id].x, vertices[vertex_3d_id].y, vertices[vertex_3d_id].z});
                 obj["projected_cuboid"].push_back({
-                    int(pts_camera[vertex_id].x), 
-                    int(pts_camera[vertex_id].y)
+                    int(pts_camera[vertex_2d_id].x), 
+                    int(pts_camera[vertex_2d_id].y)
                     });
             }
             //std::cout << "push to array<< std"<<::std::endl;
@@ -501,7 +520,10 @@ void LabelTool::dump_annotaion_json(const std::string& filename,  double world_r
     anno.dumpToJson(filename, this->world_rotate_degree);
 }
 int LabelTool::load_annotation_json(const std::string& filename){
+
     double world_rot = anno.LoadJson(filename);
+
+    std::cout << "World Rotation(degree) : " << world_rot << std::endl;
     if(world_rot<0){
         return 1;
     }else{
