@@ -49,16 +49,14 @@ Box3d::Box3d(
     rear = cz - depth / 2.0;
 
     this->vertices = {
-       
-        cv::Point3f(right, bottom, rear),
-        cv::Point3f(right, bottom, front),
-        cv::Point3f(right, top, rear),
-        cv::Point3f(right, top, front),
-
         cv::Point3f(left, bottom, rear),
         cv::Point3f(left, bottom, front),
         cv::Point3f(left, top, rear),
         cv::Point3f(left, top, front),
+        cv::Point3f(right, bottom, rear),
+        cv::Point3f(right, bottom, front),
+        cv::Point3f(right, top, rear),
+        cv::Point3f(right, top, front),
 
         //center
         cv::Point3f(cx, cy, cz),
@@ -222,17 +220,14 @@ void Box3d::configure_box(
     rear = cz - depth / 2.0;
 
     this->vertices = {
+        cv::Point3f(left, bottom, rear),
+        cv::Point3f(left, bottom, front),
+        cv::Point3f(left, top, rear),
+        cv::Point3f(left, top, front),
         cv::Point3f(right, bottom, rear),
         cv::Point3f(right, bottom, front),
         cv::Point3f(right, top, rear),
         cv::Point3f(right, top, front),
-        
-        cv::Point3f(left, bottom, rear),
-        cv::Point3f(left, bottom, front),
-        cv::Point3f(left, top, rear),
-        cv::Point3f(left, top, front)
-        ,
-        
 
         //center
         cv::Point3f(cx, cy, cz),
@@ -433,7 +428,6 @@ double Annotation::LoadJson(const std::string& filename){
         cv::Vec3f size(item["size"][0], item["size"][1], item["size"][2]);
         
         this->box_spawn(cls, position, rotation, size);
-        
     }
     try{
         return j["world_rotation"];
@@ -472,7 +466,7 @@ void Annotation::dumpToJson(const std::string& filename,  double world_rotation 
             this->get_box(i).box_to_json(i)
             );
     }
-    //std::cout <<"boxlist OK" << std::endl;
+    std::cout <<"boxlist OK" << std::endl;
 
     if (file.is_open()) {
         file << j.dump(4); // Pretty print with 4 spaces
