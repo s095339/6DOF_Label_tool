@@ -433,8 +433,8 @@ bool LabelTool::_get_pnp_pose(std::vector<cv::Point2f>& points_2d, cv::Vec3f siz
     float cy = 0;
     float cz = 0;
 
-    float right = cx + width / 2.0;
-    float left = cx - width / 2.0;
+    float left = cx + width / 2.0;
+    float right = cx - width / 2.0;
     float top = cy + height / 2.0;
     float bottom = cy - height / 2.0;
     float front = cz + depth / 2.0;
