@@ -288,8 +288,9 @@ void LabelTool::build_data_list(int interval,  int keep_in_mem){
 }
 
 void LabelTool::world_rotation(double degree){
-    this->world_rotate_degree = degree;
-    std::cout << " before rotation "<< std::endl;
+
+    this->world_rotate_degree = this->world_rotate_degree + degree;
+    if(this->world_rotate_degree >= 360) this->world_rotate_degree-=360;
     //for(const auto& [key, value] : refMarkerArray){
     //        std::cout << "  " << key << ": " << value << std::endl;
     //}

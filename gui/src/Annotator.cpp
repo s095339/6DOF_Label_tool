@@ -430,16 +430,12 @@ void Annotator::OnComboBoxSelect(wxCommandEvent& event)
 
 //* world settig    *//
 void Annotator::OnWorldRotate(wxCommandEvent & WXUNUSED(event)){
-    double degree = labeltool->get_world_rotation();
+    //rotate 90 degree in every click
 
-    if(degree >= 270){
-        degree = 0;
-    }else{
-        degree+=90;
-    }
-    this->labeltool->world_rotation(degree);
+
+    this->labeltool->world_rotation(90);
     world_degree->SetLabelText(
-        wxString::Format(wxT("world degree = %f"), (float)degree)
+        wxString::Format(wxT("world degree = %f"), (float)labeltool->get_world_rotation())
     );
     ShowImage();
 }
