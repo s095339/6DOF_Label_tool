@@ -28,22 +28,21 @@ Box3d::Box3d(
 
 
 
-    //    # By default just use the normal OpenCV coordinate system
-    //    if (self.coord_system is None):
-    //        cx, cy, cz = self.center_location
+    //    #use the normal OpenCV coordinate system
+    //    #x points to left, y point upward, z points forward
 
     
     float cx = this-> position.x;
-    float cy = -(this-> position.y);
+    float cy = this-> position.y;
     float cz = this-> position.z;
 
     float right, left, top, bottom, front, rear;
-    //X axis point to the right
-    right = cx + width / 2.0;
-    left = cx - width / 2.0;
-    //Y axis point upward(注意這邊是反過來的)
-    top = cy - height / 2.0;
-    bottom = cy + height / 2.0;
+    //X axis point to the left
+    left = cx + width / 2.0;
+    right = cx - width / 2.0;
+    //Y axis point upward
+    top = cy + height / 2.0;
+    bottom = cy - height / 2.0;
     //Z axis point forward
     front = cz + depth / 2.0;
     rear = cz - depth / 2.0;
@@ -64,13 +63,13 @@ Box3d::Box3d(
         cv::Point3f(cx, cy, front),
         // top center
         cv::Point3f(cx, top, cz),
-        // right center
-        cv::Point3f(right, cy, cz),
+        // left center
+        cv::Point3f(left, cy, cz),
 
         //in front of front center
         cv::Point3f(cx, cy, front+0.15),
         //above top center
-        cv::Point3f(cx, top-0.15, cz),
+        cv::Point3f(cx, top+0.15, cz),
         //rhs of right center
         cv::Point3f(right+0.15, cy, cz)
     };
@@ -205,16 +204,16 @@ void Box3d::configure_box(
     //    if (self.coord_system is None):
     //        cx, cy, cz = self.center_location
     float cx = this-> position.x;
-    float cy = -(this-> position.y);
+    float cy = this-> position.y;
     float cz = this-> position.z;
 
     float right, left, top, bottom, front, rear;
-    //X axis point to the right
-    right = cx + width / 2.0;
-    left = cx - width / 2.0;
+    //X axis point to the left
+    left = cx + width / 2.0;
+    right = cx - width / 2.0;
     //Y axis point upward(注意這邊是反過來的)
-    top = cy - height / 2.0;
-    bottom = cy + height / 2.0;
+    top = cy + height / 2.0;
+    bottom = cy - height / 2.0;
     //Z axis point forward
     front = cz + depth / 2.0;
     rear = cz - depth / 2.0;
@@ -235,13 +234,13 @@ void Box3d::configure_box(
         cv::Point3f(cx, cy, front),
         // top center
         cv::Point3f(cx, top, cz),
-        // right center
-        cv::Point3f(right, cy, cz),
+        // left center
+        cv::Point3f(left, cy, cz),
 
         //in front of front center
         cv::Point3f(cx, cy, front+0.15),
         //above top center
-        cv::Point3f(cx, top-0.15, cz),
+        cv::Point3f(cx, top+0.15, cz),
         //rhs of right center
         cv::Point3f(right+0.15, cy, cz)
     };
