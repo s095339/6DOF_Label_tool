@@ -2,6 +2,7 @@
 #include <iostream>
 #include "LabelTool.h"
 #include "Annotation.h"
+#include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <map>
 #include <stdexcept>
@@ -12,14 +13,7 @@
 #include <sstream>
 #include <fstream>
 
-//calculate box's pose
-#include <opencv2/calib3d.hpp>
-#include <Eigen/Geometry>
-#include <opencv2/calib3d.hpp>
-#include <Eigen/Geometry>
-#include <opencv2/opencv.hpp>
-#include <eigen3/Eigen/Dense>
-#include <opencv2/core/eigen.hpp>
+
 namespace fs = std::filesystem;
 
 
@@ -425,6 +419,37 @@ void LabelTool::remove_imgdat(int idx){
 
 }
 
+bool LabelTool::_get_pnp_pose(std::vector<cv::Point2f>& points_2d, cv::Vec3f size,  cv::Vec3f&rvec , cv::Vec3f&tvec){
+    float width = size[0];   // Extract width from size
+    float height = size[1];  // Extract height from size
+    float depth = size[2];   // Extract depth from size
+
+    // Calculate vertices in left-handed coordinates
+    float cx = 0;
+    float cy = 0;
+    float cz = 0;
+
+    float right = cx + width / 2.0;
+    float left = cx - width / 2.0;
+    float top = cy + height / 2.0;
+    float bottom = cy - height / 2.0;
+    float front = cz + depth / 2.0;
+    float rear = cz - depth / 2.0;
+
+    std::vector<cv::Point3f> objectPoints = {
+        cv::Point3f(left, bottom, rear),
+        cv::Point3f(left, bottom, front),
+        cv::Point3f(left, top, rear),
+        cv::Point3f(left, top, front),
+        cv::Point3f(right, bottom, rear),
+        cv::Point3f(right, bottom, front),
+        cv::Point3f(right, top, rear),
+        cv::Point3f(right, top, front),
+    };
+
+    return cv::solvePnP(objectPoints, points_2d, this->intrinsic, this->dist, rvec, tvec);
+     
+}
 void LabelTool::dump_dataset_json(fs::path path){
     int image_idx = 0;
     for(ImageData & imgdat: this->data_list){ //每一個image data 會存一個json
@@ -462,11 +487,11 @@ void LabelTool::dump_dataset_json(fs::path path){
             obj["scale"]= json::array();
             
             std::vector<cv::Point2f> pnp_box_2d; // 算box的PNP
-            std::vector<cv::Point3f> pnp_box_3d; // 算box的PNP
+            
             
 
-            //為了尊崇objectron的標註 他們的2D點跟3D盒子的八個頂點 左右是反過來的
-            int box_2d_point_order[] = {8,4,5,6,7,0,1,2,3};//8是中心點
+            
+            int box_2d_point_order[] = {8,0,1,2,3,4,5,6,7};//8是中心點
             int box_3d_point_order[] = {8,0,1,2,3,4,5,6,7};
             for(int i=0; i<9; i++){
                 int vertex_2d_id = box_2d_point_order[i];
@@ -474,9 +499,8 @@ void LabelTool::dump_dataset_json(fs::path path){
                 //解算PNP時不用到中心點
                 if(i>0){
                     pnp_box_2d.push_back(pts_camera[vertex_2d_id]);
-                    pnp_box_3d.push_back(vertices[vertex_3d_id]);
                 }
-                //因為在objectron的label 中心點放在第一個 而我們的label中心點放第九個 要配合obejctron的label
+                
                 obj["keypoints_3d"].push_back({vertices[vertex_3d_id].x, vertices[vertex_3d_id].y, vertices[vertex_3d_id].z});
                 obj["projected_cuboid"].push_back({
                     int(pts_camera[vertex_2d_id].x), 
@@ -490,8 +514,14 @@ void LabelTool::dump_dataset_json(fs::path path){
             
             //obj["quaternion_xyzw"] = 
             obj["scale"]= {box.get_size().x, box.get_size().y, box.get_size().z};
+            cv::Vec3f rvec; 
+            cv::Vec3f tvec;
+            this->_get_pnp_pose(pnp_box_2d, box.get_size(),rvec, tvec);
+            obj["rvec"] = {rvec[0], rvec[1], rvec[2]};
+            obj["tvec"] = {tvec[0], tvec[1], tvec[2]};
 
             j["objects"].push_back(obj);
+
 
         }
 

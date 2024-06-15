@@ -83,7 +83,7 @@ private:
     std::map<int, cv::Point3f> refMarkerArray;
     int aruco_dict;
     
-
+    bool _get_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f, cv::Vec3f&, cv::Vec3f&);
 
 
 public:
