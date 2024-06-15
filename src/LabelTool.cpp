@@ -333,7 +333,7 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
     //
     cv::Point3f origin(0.0,0.0,0.0);
     cv::Point3f xaxis(0.15,0.0,0.0);
-    cv::Point3f yaxis(0.0,-0.15,0.0);
+    cv::Point3f yaxis(0.0,0.15,0.0);
     cv::Point3f zaxis(0.0,0.0,0.15);
     std::vector<cv::Point3f> axis_point = {   
         origin,
@@ -359,6 +359,9 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
     cv::arrowedLine(img,pts_camera_axis[0],pts_camera_axis[3], cv::Scalar(255,0,0),2);
     cv::arrowedLine(img,pts_camera_axis[0],pts_camera_axis[2], cv::Scalar(0,255,0),2);
     cv::arrowedLine(img,pts_camera_axis[0],pts_camera_axis[1], cv::Scalar(0,0,255),2);
+    cv::putText(img, "x", pts_camera_axis[1], 1, 2,cv::Scalar(0,0,255),1);
+    cv::putText(img, "y", pts_camera_axis[2], 1, 2,cv::Scalar(0,255,0),1);
+    cv::putText(img, "z", pts_camera_axis[3], 1, 2,cv::Scalar(255,0,0),1);
     // get annotation data (box information)
     for(int i=0 ; i<this->anno.box_number(); i++)//iterate all box 
     {
