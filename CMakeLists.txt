@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Find OpenCV
-find_package(OpenCV REQUIRED)
+set(OpenCV_REQUIRED_VERSION 4.7.0)
+find_package(OpenCV ${OpenCV_REQUIRED_VERSION} REQUIRED)
 
 # Find wxWidgets
 find_package(wxWidgets REQUIRED COMPONENTS net core base)
