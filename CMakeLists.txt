@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.29.3)
 project(ArUco_world)
 
 # Set the C++ standard
