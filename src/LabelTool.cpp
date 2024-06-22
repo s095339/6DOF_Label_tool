@@ -39,9 +39,17 @@ ImageData::ImageData(std::string image_path,std::map<std::string, double>intrins
     this->intrinsic_para = intrinsic_para;
     this->intrinsic_ptr = intr_ptr;
     this->dist_ptr = dist_ptr;
-
+    this->is_depth = false;
 }
 
+ImageData::ImageData(std::string image_path,std::string depth_path,std::map<std::string, double>intrinsic_para,  cv::Mat* const intr_ptr, cv::Mat* const dist_ptr)
+:image_path{image_path},depth_path{depth_path}, keep_in_mem{0}
+{
+    this->intrinsic_para = intrinsic_para;
+    this->intrinsic_ptr = intr_ptr;
+    this->dist_ptr = dist_ptr;
+    this->is_depth = true;
+}
 cv::Mat ImageData::get_image(){
     if(this->keep_in_mem)
         return this->image.clone();
@@ -105,8 +113,13 @@ int ImageData::calculate_extrinsic(std::map<int, cv::Point3f>refMarkerArray,int 
     }
     
     //TODO: get extrinsic from multiple aruco markers
-    int flag = this->_estimateCameraPose(refMarkerArray, markerIds, markerCorners);
-    
+    int flag;
+    try{
+        flag = this->_estimateCameraPose(refMarkerArray, markerIds, markerCorners);
+    }catch(const std::exception& e){
+        std::cout << e.what() << std::endl;
+        flag = 0;
+    }    
     return flag;
 }
 int ImageData::_estimateCameraPose(
@@ -228,7 +241,9 @@ std::tuple<cv::Vec3f, cv::Vec3f> ImageData::get_extrinsic(){
 std::string ImageData::get_image_path(){
     return this->image_path;
 }
-
+std::string ImageData::get_depth_path(){
+    return this->depth_path;
+}
 json ImageData::get_image_json() {
     //std::cout << "goint to reat" << std::endl;
     //std::cout << "it's ok" << std::endl;        
@@ -257,7 +272,8 @@ intrinsic{dataloader.get_Camera_intrinsic()},
 dist{dataloader.get_Camera_dist()},
 aruco_dict{dataloader.get_aruco_dict()},
 refMarkerArray{dataloader.get_refMarkerArray()},
-anno{Annotation()}
+anno{Annotation()},
+is_depth{dataloader.is_depth()}
 {
     this->world_rotate_degree = 0.0;
 }
@@ -267,14 +283,28 @@ void LabelTool::build_data_list(int interval,  int keep_in_mem){
     
     // add all image 
     std::cout << "build data list ... " << std::endl;
+    if(this->is_depth) std::cout << "depth data "<<std::endl;
     int deleted = 0;
     int count = 0;
     for(int i=0; i<dataloader.length(); i+=interval){
-        ImageData imgdat(dataloader[i],this->intrinsic_para, &(this->intrinsic), &(this->dist));// &(this->intrinsic) &(this->dist)
-        std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
-        int flag = imgdat.calculate_extrinsic(refMarkerArray, this->aruco_dict, keep_in_mem);
-        if(flag == 1) this->data_list.push_back(imgdat);
-        else deleted++;
+        if(this->is_depth) {
+            //std::cout << "read image:  "<< dataloader[i] <<"and " <<  dataloader.get_depth(i)<<std::endl;
+            ImageData imgdat(dataloader[i], dataloader.get_depth(i),this->intrinsic_para, &(this->intrinsic), &(this->dist));// &(this->intrinsic) &(this->dist)
+            std::cout << "read color image "<< count <<" : " <<dataloader[i] << std::endl;
+            std::cout << "read depth image "<< count <<" : " <<dataloader.get_depth(i) << std::endl;
+            count++;
+            int flag = imgdat.calculate_extrinsic(refMarkerArray, this->aruco_dict, keep_in_mem);
+            if(flag == 1) this->data_list.push_back(imgdat);
+            else deleted++;
+        }
+        else{ 
+            ImageData imgdat(dataloader[i],this->intrinsic_para, &(this->intrinsic), &(this->dist));// &(this->intrinsic) &(this->dist)
+            std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
+            int flag = imgdat.calculate_extrinsic(refMarkerArray, this->aruco_dict, keep_in_mem);
+            if(flag == 1) this->data_list.push_back(imgdat);
+            else deleted++;
+        }
+        
     }
 
     std::cout << "[info] stored " << this->data_list.size() << 
@@ -419,6 +449,47 @@ void LabelTool::generate_annotation(){
 
 void LabelTool::remove_imgdat(int idx){
     //this->Box_list.erase(this->Box_list.begin() + box_id);
+    ImageData& imgdat = this->data_list.at(idx);
+    std::string color_path = imgdat.get_image_path();
+    std::string depth_path;
+    /*
+    try {
+        // Check if the file exists before attempting to delete it
+        if (fs::exists(color_path)) {
+            // Remove the file
+            fs::remove(color_path);
+            std::cout << "File deleted successfully: " << color_path << std::endl;
+        } else {
+            std::cerr << "File does not exist: " << color_path << std::endl;
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "Filesystem error: " << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+
+    if(this->is_depth){
+        depth_path = imgdat.get_depth_path();
+        try {
+        // Check if the file exists before attempting to delete it
+            if (fs::exists(depth_path)) {
+                // Remove the file
+                fs::remove(depth_path);
+                std::cout << "File deleted successfully: " << depth_path << std::endl;
+            } else {
+                std::cerr << "File does not exist: " << depth_path << std::endl;
+            }
+        } catch (const fs::filesystem_error& e) {
+            std::cerr << "Filesystem error: " << e.what() << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    } 
+    */
+    
+
+
     this->data_list.erase(this->data_list.begin()+idx);
 
 }
@@ -454,7 +525,30 @@ bool LabelTool::_get_pnp_pose(std::vector<cv::Point2f>& points_2d, cv::Vec3f siz
     return cv::solvePnP(objectPoints, points_2d, this->intrinsic, this->dist, rvec, tvec);
      
 }
-void LabelTool::dump_dataset_json(fs::path path){
+void LabelTool::dump_dataset_json(){
+
+    fs::path path(dataloader.get_datapath());
+    fs::path anno_path = path / "annotation";
+
+    try {
+        // Check if the directory exists
+        if (fs::exists(anno_path)) {
+            // Remove the directory and all its contents
+            fs::remove_all(anno_path);
+            std::cout << "Deleted existing directory and its contents: " << anno_path << std::endl;
+        }
+
+        // Create the new directory
+        fs::create_directory(anno_path);
+        std::cout << "Created directory: " << anno_path << std::endl;
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "Filesystem error: " << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+    
+
+
     int image_idx = 0;
     for(ImageData & imgdat: this->data_list){ //每一個image data 會存一個json
         
@@ -468,9 +562,55 @@ void LabelTool::dump_dataset_json(fs::path path){
 
         
         json j; 
+
+        std::string color_path = imgdat.get_image_path();
+        fs::path full_color_path(color_path);
+        std::string result_color;
+        // Find the position of "color" in the path
+        auto pos = full_color_path.string().find("color/");
+        if (pos != std::string::npos) {
+            // Extract the subpath starting from "color/"
+            fs::path sub_path = full_color_path.string().substr(pos);
+
+            // Convert sub_path to std::string
+           result_color = sub_path.string();
+
+        } else {
+            std::cerr << "The specified path does not contain 'color/'" << std::endl;
+            continue;
+        }
+
+
+        std::string result_depth;
+        if(is_depth){
+            std::string depth_path = imgdat.get_depth_path();
+            fs::path full_depth_path = fs::path(depth_path);
+            pos = full_depth_path.string().find("depth/");
+            if (pos != std::string::npos) {
+            // Extract the subpath starting from "color/"
+                fs::path sub_path = full_depth_path.string().substr(pos);
+
+                // Convert sub_path to std::string
+                result_depth = sub_path.string();
+
+            } else {
+                std::cerr << "The specified path does not contain 'color/'" << std::endl;
+                continue;
+            }
+        }
+
+
+
+        
+        j["color_data_path"] = result_color;
+        if(is_depth){
+            j["isDepth"] = true;
+            j["depth_data_path"] = result_depth;
+        }else{
+            j["isDepth"] = false;
+        }
         j["camera_data"] = imgdat.get_image_json();
-       
-       // std::cout << "get cam data OK"<< std::endl;
+        // std::cout << "get cam data OK"<< std::endl;
         j["objects"] = json::array();
         //std::cout << "json::array() OK"<< std::endl;
         for(int box_id = 0; box_id < this->anno.box_number(); box_id ++ ){ //每一個box
@@ -530,12 +670,22 @@ void LabelTool::dump_dataset_json(fs::path path){
         }
 
         //store data
-        std::ostringstream oss;
-        oss << std::setw(5) << std::setfill('0') << image_idx;
-        std::string dataname = oss.str();
+        //std::ostringstream oss;
+        //oss << std::setw(5) << std::setfill('0') << image_idx;
+        
+        fs::path temp = imgdat.get_image_path();
+        std::string dataname = temp.filename().string();
+        pos = dataname.find("_color.png");
+        std::string jsonname;
+        if (pos != std::string::npos) {
+            // Extract the part before "_color.png"
+            jsonname = dataname.substr(0, pos);
+        } else {
+            std::cerr << "The specified filename does not contain '_color.png'" << std::endl;
+        }
 
-        fs::path json_path = path / (dataname + ".json");
-        fs::path img_path = path / (dataname + ".png");
+        fs::path json_path = anno_path / (jsonname + ".json");
+        //fs::path img_path = anno_path / (dataname + ".png");
         //cv::imwrite(img_path, img);
 
         std::ofstream file(json_path);
@@ -543,9 +693,9 @@ void LabelTool::dump_dataset_json(fs::path path){
         if (file.is_open()) {
             file << j.dump(4); // Pretty print with 4 spaces
             file.close();
-            cv::imwrite(img_path, img);
+            //cv::imwrite(img_path, img);
         } 
-        std::cout << "Save image and Json, filename = " << dataname <<::std::endl;
+        std::cout << "Save Json, filename = " << json_path <<::std::endl;
         image_idx++;
     }
 }
@@ -561,7 +711,7 @@ int LabelTool::load_annotation_json(const std::string& filename){
     if(world_rot<0){
         return 1;
     }else{
-    this->world_rotate_degree = world_rot;
+    //this->world_rotate_degree = world_rot;
     world_rotation(world_rot);
         return 0;
     }

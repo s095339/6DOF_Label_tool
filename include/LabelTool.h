@@ -17,6 +17,10 @@ class ImageData{
 private:
     std::string image_path;
 
+    //depth
+    bool is_depth;
+    std::string depth_path;
+    
     //the camera pose of this image
     cv::Vec3f tvecs; 
     cv::Vec3f rvecs;
@@ -33,7 +37,7 @@ private:
     //h,w
     int height;
     int width;
-
+    
     //world_camera setting
     //int aruco_dict;
     //std::map<int, cv::Point3f> refMarkerArray;
@@ -46,8 +50,9 @@ private:
         );
 
 public:                             
-    //constructor                                                
-    ImageData(std::string,std::map<std::string, double>, cv::Mat* const, cv::Mat* const);
+    //constructor                                                  
+    ImageData(std::string,std::map<std::string, double>, cv::Mat* const, cv::Mat* const);//only color
+    ImageData(std::string,std::string,std::map<std::string, double>, cv::Mat* const, cv::Mat* const);// color and depth
     //ImageData(ImageData && source); 
     //menber function
     void set_intrinsic_para(std::map<std::string, double>);//for dumping dataset to json
@@ -63,6 +68,7 @@ public:
     
     cv::Mat get_image();
     std::string get_image_path();
+    std::string get_depth_path();
     json get_image_json() ;
 };
 
@@ -82,7 +88,8 @@ private:
     //world camera setting
     std::map<int, cv::Point3f> refMarkerArray;
     int aruco_dict;
-    
+    //depth 
+    bool is_depth;
     bool _get_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f, cv::Vec3f&, cv::Vec3f&);
 
 
@@ -101,7 +108,7 @@ public:
     void generate_annotation();
 
     void remove_imgdat(int);
-    void dump_dataset_json(fs::path);
+    void dump_dataset_json();
 
     void dump_annotaion_json(const std::string& filename,  double world_rotation );
     int load_annotation_json(const std::string& filename);
