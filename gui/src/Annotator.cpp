@@ -807,6 +807,8 @@ void Annotator::OnLoadJson(wxCommandEvent & WXUNUSED(event)){
 }
 
 void Annotator::OnDumpDataset(wxCommandEvent & WXUNUSED(event)){
+    labeltool->dump_dataset_json();
+    /*
     wxDirDialog dirDialog(this, "Choose a directory", wxEmptyString, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
     
     if (dirDialog.ShowModal() == wxID_OK)
@@ -844,6 +846,5 @@ void Annotator::OnDumpDataset(wxCommandEvent & WXUNUSED(event)){
         }
 
         
-    }
-
+    }*/
 }
