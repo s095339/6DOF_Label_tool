@@ -295,14 +295,36 @@ void LabelTool::build_data_list(int interval,  int keep_in_mem){
             count++;
             int flag = imgdat.calculate_extrinsic(refMarkerArray, this->aruco_dict, keep_in_mem);
             if(flag == 1) this->data_list.push_back(imgdat);
-            else deleted++;
+            else {
+                try {
+                    if (fs::remove(imgdat.get_image_path()) && fs::remove(imgdat.get_depth_path())) {
+                        std::cout << "File " << imgdat.get_image_path() << " and " << imgdat.get_depth_path() << " deleted successfully.\n";
+                    } else {
+                        std::cout << "File " << imgdat.get_image_path() << " and " << imgdat.get_depth_path()<< " not found.\n";
+                    }
+                } catch (const fs::filesystem_error& e) {
+                    std::cerr << "Error deleting file: " << e.what() << '\n';
+                }
+                deleted++;
+            }
         }
         else{ 
             ImageData imgdat(dataloader[i],this->intrinsic_para, &(this->intrinsic), &(this->dist));// &(this->intrinsic) &(this->dist)
             std::cout << "read image "<< count++ <<" : " <<dataloader[i] << std::endl;
             int flag = imgdat.calculate_extrinsic(refMarkerArray, this->aruco_dict, keep_in_mem);
             if(flag == 1) this->data_list.push_back(imgdat);
-            else deleted++;
+            else {
+                try {
+                    if (fs::remove(imgdat.get_image_path())) {
+                        std::cout << "File " << imgdat.get_image_path() << " deleted successfully.\n";
+                    } else {
+                        std::cout << "File " << imgdat.get_image_path() << " not found.\n";
+                    }
+                } catch (const fs::filesystem_error& e) {
+                    std::cerr << "Error deleting file: " << e.what() << '\n';
+                }
+                deleted++;
+            }
         }
         
     }
@@ -452,7 +474,7 @@ void LabelTool::remove_imgdat(int idx){
     ImageData& imgdat = this->data_list.at(idx);
     std::string color_path = imgdat.get_image_path();
     std::string depth_path;
-    /*
+    
     try {
         // Check if the file exists before attempting to delete it
         if (fs::exists(color_path)) {
@@ -486,7 +508,7 @@ void LabelTool::remove_imgdat(int idx){
             std::cerr << "Error: " << e.what() << std::endl;
         }
     } 
-    */
+    
     
 
 
