@@ -21,10 +21,13 @@ class DataLoader{
 private:
     std::string datapath;
     std::vector<std::string> Image_path_list;
+    std::vector<std::string> depth_path_list;
     cv::Mat Camera_intrinsic;
     std::map<std::string, double> intrinsic_params;
     cv::Mat dist;
+    bool IsDepth;
     void _natsort();
+    void _natsort(std::vector<std::string>&);
     //world_camera setting
     int aruco_dict;
     std::map<int, cv::Point3f> refMarkerArray;
@@ -34,11 +37,13 @@ private:
 public:
     DataLoader(std::string);
     
-    std::string get_item(int idx);
-    std::string operator[](int idx);
+    
     
     //setter & getter
-    
+    std::string get_datapath(){return this->datapath;}
+    std::string get_depth(int idx);
+    std::string operator[](int idx);
+    bool is_depth(){return IsDepth;}
     
 
     cv::Mat get_Camera_intrinsic();

@@ -1,6 +1,6 @@
 #include "DataLoader.h"
 #include "natural_sort.hpp"
-
+#include <sys/stat.h>
 //constructor initialization list
 
 using namespace std;
@@ -42,14 +42,48 @@ DataLoader::DataLoader(std::string datapath)
 :datapath{datapath}
 {
     //vector<string> img_path_list = {};
+    std::string filePath = datapath +"/world_camera_setting.json";
+    //read json//
+    json jsonData;
+    
 
+    try{
+        std::ifstream file(filePath);
+        file >> jsonData;
+    }catch (const std::exception& e){
+        std::cout<< "[ERROR] world_camera_setting.json not found!"<<std::endl;
+        return;
+    }
+    IsDepth = jsonData["depth"];
+    std::string color_image_path = datapath + "/color";
+    std::string depth_image_path = datapath + "/depth";
+    std::cout << "reading color data from "<< color_image_path << std::endl;
+    if(IsDepth)std::cout << "reading depth data from "<< depth_image_path << std::endl;
+
+    if(IsDepth){
+        struct stat sb;
+        if (stat(depth_image_path.c_str(), &sb) != 0){
+            std::cout << "depth dir doesn't exist" << std::endl;
+            return;
+        }
+    }
+    
+    
     cout << "read image ... " << endl;
-    for (const auto & entry : fs::directory_iterator(this->datapath)){
-        //std::cout << "read " << entry.path() << std::endl;
+    std::vector<std::string> image_path_list_temp;
+    for (const auto & entry : fs::directory_iterator(color_image_path)){
+        std::cout << "read " << entry.path() << std::endl;
         string entrypath = string(entry.path());
-        std::size_t found = entrypath.rfind(".");
-        if(string(entry.path()).substr(found) != ".png") continue;
-        this->Image_path_list.push_back(entry.path());
+        std::size_t found = entrypath.rfind("_color.");
+        if(IsDepth && string(entry.path()).substr(found) != "_color.png"){
+            std::cout << "[delete] " << entry.path() << std::endl;
+            continue;
+        }
+        else if(!IsDepth && string(entry.path()).substr(found) != ".png"){
+            continue;
+        }
+
+       image_path_list_temp.push_back(entry.path());
     
     }
     
@@ -57,14 +91,12 @@ DataLoader::DataLoader(std::string datapath)
     //world camera setting
     //std::map<std::string, double> intrinsic_params;
     //std::map<int, cv::Point3f> refMarkerArray;
-    std::string filePath = datapath +"/world_camera_setting.json";
     
-    try {
-        //read json//
-        std::ifstream file(filePath);
-        json jsonData;
-        file >> jsonData;
 
+    try {
+
+       
+        
         // Read the aruco_dict
         std::string dict_name = jsonData["aruco_dict"];
         if (aruco_dict_map.find(dict_name) != aruco_dict_map.end()) {
@@ -108,7 +140,45 @@ DataLoader::DataLoader(std::string datapath)
 
     //this->Image_path_list 
     this->_set_Camera_intrinsic();
-    this->_natsort();
+    this->_natsort(image_path_list_temp);
+    if(IsDepth){
+        std::cout << "check: "<< std::endl;
+        for(const auto& color_file_path: image_path_list_temp){
+            fs::path full_path(color_file_path);
+
+            // Extract the filename from the path
+            std::string color_filename = full_path.filename().string();
+            std::string depth_file_name;
+            auto pos = color_filename.find("_color.png");
+            if (pos != std::string::npos) {
+                // Replace "_color.png" with "_depth.png"
+                depth_file_name = color_filename.substr(0, pos) + "_depth.png";
+                
+            } else {
+                std::cerr << "The specified filename does not contain '_color.png'" << std::endl;
+                continue;
+            }
+
+
+            // Check if the corresponding depth file exists
+            //std::cout << "check: " << depth_file_name << std::endl;
+        
+            fs::path depth_file_path = fs::path(depth_image_path) / depth_file_name;
+            if (fs::exists(depth_file_path)) {
+                std::cout << "read color: " << color_file_path<< "\nread depth:"<< depth_file_name << std::endl;
+                this->Image_path_list.push_back(color_file_path);
+                this->depth_path_list.push_back(depth_file_path);
+            }
+        }
+    }else{
+        std::cout << "check: "<< std::endl;
+        for(const auto& color_file_path: image_path_list_temp){
+                this->Image_path_list.push_back(color_file_path);
+        }
+    }
+
+
+    
 }
 
 
@@ -142,12 +212,17 @@ int DataLoader::get_aruco_dict(){
 void DataLoader::_natsort(){
 
     SI::natural::sort(this->Image_path_list);
-
+    if(IsDepth) SI::natural::sort(this->depth_path_list);
+}
+void DataLoader::_natsort(std::vector<std::string>& image_list){
+    SI::natural::sort(image_list);
 }
 
-std::string DataLoader::get_item(int idx){
-    return this->Image_path_list.at(idx);
+std::string DataLoader::get_depth(int idx){
+    return this->depth_path_list.at(idx);
 }
+
+
 
 std::string  DataLoader::operator[](int idx){
     return this->Image_path_list.at(idx);
