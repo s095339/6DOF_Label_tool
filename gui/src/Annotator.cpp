@@ -28,7 +28,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 {   
 
     cv::namedWindow("Stream", cv::WINDOW_NORMAL);
-    cv::resizeWindow("Stream", 640, 480);
+    cv::resizeWindow("Stream", 1280, 720);
     wxInitAllImageHandlers();
     // build LabelTool===============================
     this->dataloader = new DataLoader(dir_path);
@@ -394,6 +394,7 @@ void Annotator::OnBoxRemove(wxCommandEvent & WXUNUSED(event)){
         wxMessageBox("No item selected", "Error", wxOK | wxICON_ERROR);
         return;
     }
+    box_id--;
     ShowImage();
 }
 
@@ -714,7 +715,10 @@ void Annotator::OnPrevious10Click(wxCommandEvent & WXUNUSED(event))
     ShowImage(box_id);
 }
 void Annotator::ShowImage(int show_selected_box_direction){
-    cv::imshow("Stream", labeltool->imshow_with_label(image_id, show_selected_box_direction));
+
+    cv::Mat RGB_img;
+    cv::cvtColor(labeltool->imshow_with_label(image_id, show_selected_box_direction), RGB_img, cv::COLOR_RGB2BGR);
+    cv::imshow("Stream", RGB_img);
 }
 void Annotator::updateLabel(){
     cv::Point3f pos = labeltool->get_anno().get_box(box_id).get_position();

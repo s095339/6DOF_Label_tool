@@ -429,9 +429,9 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
         //visualize box 
         idx = 1;
         for(auto& pt : pts_camera){
-            if(idx<9)cv::putText(
-                img, std::to_string(idx++),pt+cv::Point2f(2,2), 1, 2, cv::Scalar(0,255,255),2
-                );
+            //if(idx<9)cv::putText(
+            //    img, std::to_string(idx++),pt+cv::Point2f(2,2), 1, 2, cv::Scalar(0,255,255),2
+            //    );
 
             cv::circle(img, pt, 2, cv::Scalar(0,128,128));
         }
