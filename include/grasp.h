@@ -63,7 +63,7 @@ public:
         gripper_bottom = cy - this->width / 2;
         
         this->vertices = {
-            cv::Point3f(cx, cy, cz), //center point
+            cv::Point3f(cx, cy, cz), //grasp center point
             cv::Point3f(left, top, cz), // top left
             cv::Point3f(left, bottom, cz), // bottom left
             cv::Point3f(right, top, cz), // top right
@@ -71,8 +71,11 @@ public:
 
             cv::Point3f(left, gripper_top, cz), //top_gripper  5
             cv::Point3f(left, gripper_bottom, cz), //buttom_gripper  6
-            cv::Point3f(right, gripper_top, cz), //top_gripper  7
-            cv::Point3f(right, gripper_bottom, cz), //buttom_gripper  8
+            cv::Point3f((right+left)/2, gripper_top, cz), //top_gripper  7
+            cv::Point3f((right+left)/2, gripper_bottom, cz), //buttom_gripper  8
+
+            cv::Point3f((right+left)/2, cy, cz), // ct of rect 9
+            cv::Point3f(right, cy, cz), // right_center 10
         };
     }
     std::vector<cv::Point3f> rotate( std::vector<cv::Point3f> v , cv::Vec3f rot){
