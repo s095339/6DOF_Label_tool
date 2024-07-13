@@ -76,9 +76,16 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     wxBoxSizer* vbox_rz = new wxBoxSizer(wxVERTICAL);
    
     //grasp
-    wxBoxSizer* vbox_1_5 = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer* vbox_grasp = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer *hbox_grasp_cls = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer *hbox_grasp_setting = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *hbox_grasp_configuration = new wxBoxSizer(wxHORIZONTAL);
+        wxBoxSizer* vbox_grasp_location = new wxBoxSizer(wxVERTICAL);
+            wxBoxSizer* hbox_grasp_location_x = new wxBoxSizer(wxHORIZONTAL);
+            wxBoxSizer* hbox_grasp_location_y = new wxBoxSizer(wxHORIZONTAL);
+            wxBoxSizer* hbox_grasp_location_z = new wxBoxSizer(wxHORIZONTAL);
+        wxBoxSizer* vbox_grasp_rotation = new wxBoxSizer(wxVERTICAL);
+        wxBoxSizer* vbox_grasp_width = new wxBoxSizer(wxVERTICAL);
 
     wxBoxSizer *hbox2 = new wxBoxSizer(wxHORIZONTAL);// choose the image
     
@@ -167,6 +174,26 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
     paired_index_select->Append(wxT("paired_id: 0"));
     paired_index_select->Append(wxT("paired_id: 1"));
+    paired_index_select->Append(wxT("paired_id: 2"));
+
+    //* configure grasp
+    // grasp position
+    grasp_stride_text = new wxTextCtrl(paintPanel, wxID_ANY, "" ,wxDefaultPosition, wxDefaultSize);
+    grasp_position_label = new wxStaticText(paintPanel, wxID_ANY, "Grasp Position");
+    //x
+    grasp_x_plus = new wxButton(paintPanel, ID_GRASP_X_PLUS, wxT("x+"));
+    grasp_x_val = new wxStaticText(paintPanel, wxID_ANY, "x = none");
+    grasp_x_minus = new wxButton(paintPanel, ID_GRASP_X_MINUS, wxT("x-"));
+    //y
+    grasp_y_plus = new wxButton(paintPanel, ID_GRASP_Y_PLUS, wxT("y+ "));
+    grasp_y_val = new wxStaticText(paintPanel, wxID_ANY, "y = none");
+    grasp_y_minus = new wxButton(paintPanel, ID_GRASP_Y_MINUS, wxT("y-"));
+    //z
+    grasp_z_plus = new wxButton(paintPanel, ID_GRASP_Z_PLUS, wxT("z+"));
+    grasp_z_val = new wxStaticText(paintPanel, wxID_ANY, "z = none");
+    grasp_z_minus = new wxButton(paintPanel, ID_GRASP_Z_MINUS, wxT("z-"));
+
+
     //* choose image [hbox2]
   
      
@@ -277,22 +304,50 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
     vbox->Add(hbox1 , 1, wxEXPAND);
 
-    //grasp
-    //wxBoxSizer* vbox_1_5 = new wxBoxSizer(wxVERTICAL);
+    //grasp======================================================================
+    //wxBoxSizer* vbox_grasp = new wxBoxSizer(wxVERTICAL);
     //wxBoxSizer *hbox_grasp_cls = new wxBoxSizer(wxHORIZONTAL);
     //wxBoxSizer *hbox_grasp_setting = new wxBoxSizer(wxHORIZONTAL);
     hbox_grasp_cls->Add(cls_grasp_select0,0,wxALIGN_CENTER);
     hbox_grasp_cls->Add(cls_grasp_select1,0,wxALIGN_CENTER);
+
     hbox_grasp_setting->Add(paired_grasp_spawn,0,wxALIGN_CENTER);
     hbox_grasp_setting->Add(paired_grasp_remove,0,wxALIGN_CENTER);
     hbox_grasp_setting->Add(paired_grasp_select,0,wxALIGN_CENTER);
     hbox_grasp_setting->Add(paired_index_select,0,wxALIGN_CENTER);
     hbox_grasp_setting->Add(paired_grasp_copy,0,wxALIGN_CENTER);
+    ////grasp location////
+    hbox_grasp_location_x->Add(grasp_x_plus,0,wxALIGN_CENTER);
+    hbox_grasp_location_x->Add(grasp_x_minus,0,wxALIGN_CENTER);
+    hbox_grasp_location_x->Add(grasp_x_val,0,wxALIGN_CENTER);
 
-    vbox_1_5->Add(hbox_grasp_cls);
-    vbox_1_5->Add(hbox_grasp_setting);
-    vbox->Add(vbox_1_5 , 1, wxEXPAND);
+    hbox_grasp_location_y->Add(grasp_y_plus,0,wxALIGN_CENTER);
+    hbox_grasp_location_y->Add(grasp_y_minus,0,wxALIGN_CENTER);
+    hbox_grasp_location_y->Add(grasp_y_val,0,wxALIGN_CENTER);
 
+    hbox_grasp_location_z->Add(grasp_z_plus,0,wxALIGN_CENTER);
+    hbox_grasp_location_z->Add(grasp_z_minus,0,wxALIGN_CENTER);
+    hbox_grasp_location_z->Add(grasp_z_val,0,wxALIGN_CENTER);
+
+    vbox_grasp_location->Add(grasp_position_label);
+    vbox_grasp_location->Add(grasp_stride_text);
+    vbox_grasp_location->Add(hbox_grasp_location_x);
+    vbox_grasp_location->Add(hbox_grasp_location_y);
+    vbox_grasp_location->Add(hbox_grasp_location_z);
+    ////grasp rotation////
+    ////grasp width////
+
+    hbox_grasp_configuration->Add(vbox_grasp_location,0,wxALIGN_CENTER);
+    hbox_grasp_configuration->Add(vbox_grasp_rotation,0,wxALIGN_CENTER);
+    hbox_grasp_configuration->Add(vbox_grasp_width,0,wxALIGN_CENTER);
+
+    
+    vbox_grasp->Add(hbox_grasp_cls);
+    vbox_grasp->Add(hbox_grasp_setting);
+    vbox_grasp->Add(hbox_grasp_configuration);
+
+    vbox->Add(vbox_grasp , 1, wxEXPAND);
+    //==================================================================================
 
     hbox2->Add(previous_10_image);
     hbox2->Add(previous_image);
@@ -376,6 +431,22 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
         wxCommandEventHandler(Annotator::OnPairedIdSelect), NULL, this);
      Connect(ID_PAIRED_GRASP_COPY, wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(Annotator::OnPairedGraspCopy));
+    }
+    //grasp configuration
+    { //position
+    Connect(ID_GRASP_X_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnGraspXPlus));
+    Connect(ID_GRASP_X_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnGraspXMinus));
+    Connect(ID_GRASP_Y_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnGraspYPlus));
+    Connect(ID_GRASP_Y_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnGraspYMinus));
+    Connect(ID_GRASP_Z_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnGraspZPlus));
+    Connect(ID_GRASP_Z_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnGraspZMinus));
+
     }
     //*image choose
     Connect(ID_PRE_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
@@ -731,77 +802,85 @@ void Annotator::OnRZMinus(wxCommandEvent & WXUNUSED(event)){
 
 //set grasp
 void Annotator::OnPairedGraspSpawn(wxCommandEvent & WXUNUSED(event)){
-    Box3d& box =  labeltool->get_anno().get_box(box_id);
-
-    int cls0 = stoi(cls_grasp_select0->GetValue().ToStdString());
-    int cls1 = stoi(cls_grasp_select1->GetValue().ToStdString());
+    try{
+        Box3d& box =  labeltool->get_anno().get_box(box_id);
     
+        int cls0;
+        int cls1;
+        try{
+            int cls0 = stoi(cls_grasp_select0->GetValue().ToStdString());
+            int cls1 = stoi(cls_grasp_select1->GetValue().ToStdString());
+        }catch(const std::exception& e){
+            cls0 = 0;
+            cls1 = 0;
+        }
 
-    cv::Point3f pos = box.get_position();
-    cv::Vec3f size = box.get_size();
+        cv::Point3f pos = box.get_position();
+        cv::Vec3f size = box.get_size();
 
-    cv::Point3f grasp0_position(
-        pos.x + size[0]/2,
-        pos.y,
-        pos.z
-    );
-    cv::Point3f grasp1_position(
-        pos.x - size[0]/2,
-        pos.y,
-        pos.z
-    );
-    cv::Vec3f grasp0_rotation(
-        0.0,
-        180.0 * M_PI/180.0,
-        0.0
-    );
-    cv::Vec3f grasp1_rotation(
-        0.0,
-        0.0,
-        0.0
-    );
+        cv::Point3f grasp0_position(
+            pos.x + size[0]/2,
+            pos.y,
+            pos.z
+        );
+        cv::Point3f grasp1_position(
+            pos.x - size[0]/2,
+            pos.y,
+            pos.z
+        );
+        cv::Vec3f grasp0_rotation(
+            0.0,
+            180.0 * M_PI/180.0,
+            0.0
+        );
+        cv::Vec3f grasp1_rotation(
+            0.0,
+            0.0,
+            0.0
+        );
 
 
-    try
-    {
-        
-        if (cls0 <0  || cls1 <0){
-            wxLogError("Number should >=  0");
+        try
+        {
+            
+            if (cls0 <0  || cls1 <0){
+                wxLogError("Number should >=  0");
+                return;
+            }
+            //box_count ++;
+            //box_id  = box_count -1; //set to latest box    
+            box.paired_grasp_spawn(
+                cls0, cls1,
+                grasp0_position,
+                grasp0_rotation,
+                0.04,
+                grasp1_position,
+                grasp1_rotation,
+                0.04
+            );
+            cout << "Grasp Spawn" << endl;
+            
+            paired_grasp_select->Append(wxString::Format("paired grasp id: %d ", box.paired_grasp_number()-1 ));
+
+            ShowImage(box_id, box.paired_grasp_number()-1, -1);
+
+            return; 
+        }
+        catch(const std::exception& e)
+        {
+            wxLogError("Please input Number");
             return;
         }
-        //box_count ++;
-        //box_id  = box_count -1; //set to latest box    
-        box.paired_grasp_spawn(
-            cls0, cls1,
-            grasp0_position,
-            grasp0_rotation,
-            0.04,
-            grasp1_position,
-            grasp1_rotation,
-            0.04
-        );
-        cout << "Grasp Spawn" << endl;
-        
-        paired_grasp_select->Append(wxString::Format("paired grasp id: %d ", box.paired_grasp_number()-1 ));
 
-        ShowImage(box_id, box.paired_grasp_number()-1, -1);
-
-        return; 
-    }
-    catch(const std::exception& e)
-    {
-        wxLogError("Please input Number");
+    }catch(const std::exception& e){
+        wxLogError("invalid box_id");
         return;
     }
-
-
 }
 void Annotator::OnPairedGraspRemove(wxCommandEvent & WXUNUSED(event)){
+    
     Box3d& box =  labeltool->get_anno().get_box(box_id);
     //box.paired_grasp_remove(paired_grasp_id);
-
-
-
     paired_grasp_id = paired_grasp_select->GetSelection();
     if (paired_grasp_id != wxNOT_FOUND)
     {
@@ -846,6 +925,226 @@ void Annotator::OnPairedIdSelect(wxCommandEvent & event){
 void Annotator::OnPairedGraspCopy(wxCommandEvent & WXUNUSED(event)){
     
 }
+
+//posision 
+//x
+void Annotator::OnGraspXPlus(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    
+
+    float grasp_stride; 
+    try{
+        grasp_stride = stof(grasp_stride_text->GetValue().ToStdString());
+    }catch(const std::exception& e){
+        grasp_stride = 0.01;
+    }
+
+
+    if(paired_id == 2){
+        box.configure_paired_grasp(
+            paired_grasp_id, 0, 
+            cv::Point3f(grasp_stride, 0.0, 0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+        box.configure_paired_grasp(
+            paired_grasp_id, 1, 
+            cv::Point3f(grasp_stride, 0.0, 0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+    }else{
+        box.configure_paired_grasp(
+            paired_grasp_id, paired_id, 
+            cv::Point3f(grasp_stride, 0.0, 0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+    }
+
+    updateLabel();
+    ShowImage(box_id , paired_grasp_id, paired_id);
+}
+void Annotator::OnGraspXMinus(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    float grasp_stride; 
+    try{
+        grasp_stride = stof(grasp_stride_text->GetValue().ToStdString());
+    }catch(const std::exception& e){
+        grasp_stride = 0.01;
+    }
+    if(paired_id == 2){
+        box.configure_paired_grasp(
+            paired_grasp_id, 0, 
+            cv::Point3f(-grasp_stride, 0.0, 0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+        box.configure_paired_grasp(
+            paired_grasp_id, 1, 
+            cv::Point3f(-grasp_stride, 0.0, 0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+    }else{
+        box.configure_paired_grasp(
+            paired_grasp_id, paired_id, 
+            cv::Point3f(-grasp_stride, 0.0, 0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+    }
+
+    updateLabel();
+    ShowImage(box_id , paired_grasp_id, paired_id);
+}
+//y
+void Annotator::OnGraspYPlus(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    float grasp_stride; 
+    try{
+        grasp_stride = stof(grasp_stride_text->GetValue().ToStdString());
+    }catch(const std::exception& e){
+        grasp_stride = 0.01;
+    }
+    if(paired_id == 2){
+        box.configure_paired_grasp(
+            paired_grasp_id, 0, 
+            cv::Point3f(0.0, grasp_stride,  0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+        box.configure_paired_grasp(
+            paired_grasp_id, 1, 
+            cv::Point3f(0.0, grasp_stride,  0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+    }else{
+        box.configure_paired_grasp(
+            paired_grasp_id, paired_id, 
+            cv::Point3f(0.0, grasp_stride,  0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+    }
+
+    updateLabel();
+    ShowImage(box_id , paired_grasp_id, paired_id);
+}
+void Annotator::OnGraspYMinus(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    float grasp_stride; 
+    try{
+        grasp_stride = stof(grasp_stride_text->GetValue().ToStdString());
+    }catch(const std::exception& e){
+        grasp_stride = 0.01;
+    }
+    if(paired_id == 2){
+        box.configure_paired_grasp(
+            paired_grasp_id, 0, 
+            cv::Point3f(0.0, -grasp_stride,  0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+        box.configure_paired_grasp(
+            paired_grasp_id, 1, 
+            cv::Point3f(0.0, -grasp_stride,  0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+    }else{
+        box.configure_paired_grasp(
+            paired_grasp_id, paired_id, 
+            cv::Point3f(0.0, -grasp_stride,  0.0),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+    }
+
+    updateLabel();
+    ShowImage(box_id , paired_grasp_id, paired_id);
+}
+//z
+void Annotator::OnGraspZPlus(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    float grasp_stride; 
+    try{
+        grasp_stride = stof(grasp_stride_text->GetValue().ToStdString());
+    }catch(const std::exception& e){
+        grasp_stride = 0.01;
+    }
+    if(paired_id == 2){
+        box.configure_paired_grasp(
+            paired_grasp_id, 0, 
+            cv::Point3f(0.0, 0.0 ,grasp_stride),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+        box.configure_paired_grasp(
+            paired_grasp_id, 1, 
+            cv::Point3f(0.0, 0.0 ,grasp_stride),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+    }else{
+        box.configure_paired_grasp(
+            paired_grasp_id, paired_id, 
+            cv::Point3f(0.0, 0.0 ,grasp_stride),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+    }
+
+    updateLabel();
+    ShowImage(box_id , paired_grasp_id, paired_id);
+}
+void Annotator::OnGraspZMinus(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    float grasp_stride; 
+    try{
+        grasp_stride = stof(grasp_stride_text->GetValue().ToStdString());
+    }catch(const std::exception& e){
+        grasp_stride = 0.01;
+    }
+    if(paired_id == 2){
+        box.configure_paired_grasp(
+            paired_grasp_id, 0, 
+            cv::Point3f(0.0, 0.0 ,-grasp_stride),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+        box.configure_paired_grasp(
+            paired_grasp_id, 1, 
+            cv::Point3f(0.0, 0.0 ,-grasp_stride),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+
+    }else{
+        box.configure_paired_grasp(
+            paired_grasp_id, paired_id, 
+            cv::Point3f(0.0, 0.0 ,-grasp_stride),
+            cv::Vec3f(0.0, 0.0, 0.0),
+            0.0
+        );
+    }
+
+    updateLabel();
+    ShowImage(box_id , paired_grasp_id, paired_id);
+}
+
 
 
 
@@ -914,6 +1213,7 @@ void Annotator::ShowImage(
     cv::imshow("Stream", RGB_img);
 }
 void Annotator::updateLabel(){
+    // box
     cv::Point3f pos = labeltool->get_anno().get_box(box_id).get_position();
     cv::Point3f size = labeltool->get_anno().get_box(box_id).get_size();
     cv::Point3f rotate = labeltool->get_anno().get_box(box_id).get_rotation();
@@ -952,6 +1252,39 @@ void Annotator::updateLabel(){
     box_rz_val->SetLabelText(
         wxString::Format(wxT("%f"), 180*rotate.z/M_PI)
     );
+    //pos
+    
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+
+    if(box.paired_grasp_number() == 0 || paired_grasp_id >= box.paired_grasp_number()-1) return;
+ 
+    std::tuple<Grasp, Grasp> & paired_grasp = box.get_paired_grasp(paired_grasp_id);
+
+
+    cv::Point3f grasp_pos;
+    cv::Point3f grasp_rotate; 
+    float grasp_width;
+    if(paired_id % 2 == 0){ //paired_id == 0,2 
+        grasp_pos = std::get<0>(paired_grasp).get_position();
+        grasp_rotate = std::get<0>(paired_grasp).get_rotation();
+        grasp_width = std::get<0>(paired_grasp).get_width();
+    }else{ //paired_id == 1
+        grasp_pos = std::get<1>(paired_grasp).get_position();
+        grasp_rotate = std::get<1>(paired_grasp).get_rotation();
+        grasp_width = std::get<1>(paired_grasp).get_width();
+    }
+
+    //grasp position
+    grasp_x_val->SetLabelText(
+        wxString::Format(wxT("X = %f"), grasp_pos.x)
+    );
+    grasp_y_val->SetLabelText(
+        wxString::Format(wxT("Y = %f"), grasp_pos.y)
+    );
+    grasp_z_val->SetLabelText(
+        wxString::Format(wxT("Z = %f"), grasp_pos.z)
+    );
+
 }
 
 void Annotator::OnRemoveClick(wxCommandEvent & WXUNUSED(event)){

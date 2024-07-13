@@ -97,14 +97,34 @@ public:
         wxButton *box_rz_plus;
         wxStaticText * box_rz_val;
         wxButton *box_rz_minus;
+    //* paired grasp
     //set paired grasp
-        wxTextCtrl *cls_grasp_select0;
-        wxTextCtrl *cls_grasp_select1;
-        wxButton *paired_grasp_spawn;
-        wxButton *paired_grasp_remove;
-        wxComboBox *paired_grasp_select;
-        wxComboBox *paired_index_select;
-        wxButton *paired_grasp_copy;
+    wxTextCtrl *cls_grasp_select0;
+    wxTextCtrl *cls_grasp_select1;
+    wxButton *paired_grasp_spawn;
+    wxButton *paired_grasp_remove;
+    wxComboBox *paired_grasp_select;
+    wxComboBox *paired_index_select;
+    wxButton *paired_grasp_copy;
+    // grasp position
+    wxTextCtrl *grasp_stride_text; //grasp position 的 stride
+    wxStaticText * grasp_position_label;//顯示這裡是location
+        //x
+        wxButton *grasp_x_plus;
+        wxStaticText * grasp_x_val;
+        wxButton *grasp_x_minus;
+        //y
+        wxButton *grasp_y_plus;
+        wxStaticText * grasp_y_val;
+        wxButton *grasp_y_minus;
+        //z
+        wxButton *grasp_z_plus;
+        wxStaticText * grasp_z_val;
+        wxButton *grasp_z_minus;
+    // grasp rotation
+    
+    // grasp width
+
     //* choose image
     wxButton * previous_10_image;
     wxButton * next_10_image;
@@ -159,7 +179,20 @@ public:
     void OnPairedGraspSelect(wxCommandEvent& event);
     void OnPairedIdSelect(wxCommandEvent & WXUNUSED(event));
     void OnPairedGraspCopy(wxCommandEvent & WXUNUSED(event));
+    //*grasp configuration
+    //position
+        //x
+        void OnGraspXPlus(wxCommandEvent & WXUNUSED(event));
+        void OnGraspXMinus(wxCommandEvent & WXUNUSED(event));
+        //y
+        void OnGraspYPlus(wxCommandEvent & WXUNUSED(event));
+        void OnGraspYMinus(wxCommandEvent & WXUNUSED(event));
+        //z
+        void OnGraspZPlus(wxCommandEvent & WXUNUSED(event));
+        void OnGraspZMinus(wxCommandEvent & WXUNUSED(event));
+    //rotation
 
+    //width
 
     //*image choose
     void OnPreviousClick(wxCommandEvent & WXUNUSED(event));
@@ -232,6 +265,13 @@ const int ID_PAIRED_GRASP_SELECT = 132; //combo box
 const int ID_PAIRED_GRASP_REMOVE = 133;
 const int ID_PAIRED_INDEX_SELECT = 134;
 const int ID_PAIRED_GRASP_COPY = 135;
+
+const int ID_GRASP_X_PLUS = 136;
+const int ID_GRASP_X_MINUS = 137;
+const int ID_GRASP_Y_PLUS = 138;
+const int ID_GRASP_Y_MINUS = 139;
+const int ID_GRASP_Z_PLUS = 140;
+const int ID_GRASP_Z_MINUS = 141;
 
 #endif
 
