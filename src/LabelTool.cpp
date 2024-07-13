@@ -381,7 +381,12 @@ Annotation& LabelTool::get_anno(){
 int LabelTool::get_data_length(){
     return this->data_list.size();
 }
-cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
+cv::Mat LabelTool::imshow_with_label(
+    int idx, 
+    int show_selected_box_direction,
+    int show_selected_paired_grasp,
+    int show_selected_paired_id
+    ){
                                     // image id   //the id of the box 
     //
     cv::Point3f origin(0.0,0.0,0.0);
@@ -433,7 +438,7 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
             //    img, std::to_string(idx++),pt+cv::Point2f(2,2), 1, 2, cv::Scalar(0,255,255),2
             //    );
 
-            cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            //cv::circle(img, pt, 2, cv::Scalar(0,128,128));
         }
 
         cv::line(img,pts_camera[0],pts_camera[1], cv::Scalar(255,0,0),2);
@@ -441,20 +446,77 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
         cv::line(img,pts_camera[5],pts_camera[1], cv::Scalar(255,0,0),2);
         cv::line(img,pts_camera[4],pts_camera[5], cv::Scalar(255,0,0),2);
 
-        cv::line(img,pts_camera[2],pts_camera[6], cv::Scalar(0,255,0),2);
-        cv::line(img,pts_camera[3],pts_camera[7], cv::Scalar(0,255,0),2);
-        cv::line(img,pts_camera[2],pts_camera[3], cv::Scalar(0,255,0),2);
-        cv::line(img,pts_camera[6],pts_camera[7], cv::Scalar(0,255,0),2);
+        cv::line(img,pts_camera[2],pts_camera[6], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[3],pts_camera[7], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[2],pts_camera[3], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[6],pts_camera[7], cv::Scalar(255,0,0),2);
 
-        cv::line(img,pts_camera[0],pts_camera[2], cv::Scalar(0,0,255),2);
-        cv::line(img,pts_camera[3],pts_camera[1], cv::Scalar(0,0,255),2);
-        cv::line(img,pts_camera[7],pts_camera[5], cv::Scalar(0,0,255),2);
-        cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(0,0,255),2);
+        cv::line(img,pts_camera[0],pts_camera[2], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[3],pts_camera[1], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[7],pts_camera[5], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(255,0,0),2);
 
         if(i == show_selected_box_direction){
             cv::arrowedLine(img,pts_camera[8],pts_camera[9], cv::Scalar(255,0,0),3,7);
             cv::arrowedLine(img,pts_camera[8],pts_camera[10], cv::Scalar(0,255,0),3,7);
             cv::arrowedLine(img,pts_camera[8],pts_camera[11], cv::Scalar(0,0,255),3,7);
+        }
+
+
+        // print grasp
+        
+
+        for(int j=0; j< box.paired_grasp_number(); j++){
+            cv::Scalar color(0, 255, 0);
+            
+            if(j == show_selected_paired_grasp){
+                std::cout << " paired grasp color "<< std::endl;
+                color = cv::Scalar(0,0,255);
+            }
+
+            std::vector<cv::Point3f> vertices_grasp0 = std::get<0>(box.get_paired_grasp(j)).get_vertex(); 
+            std::vector<cv::Point2f> pts_camera_grasp0; 
+            cv::projectPoints(vertices_grasp0,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_grasp0);
+
+            for(int kk=0; kk<5; kk++){
+                auto pt = pts_camera_grasp0[kk];
+
+                cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            }
+
+
+            cv::line(img,pts_camera_grasp0[5],pts_camera_grasp0[7], color,2);
+            cv::line(img,pts_camera_grasp0[6],pts_camera_grasp0[8], color,2);
+            cv::line(img,pts_camera_grasp0[7],pts_camera_grasp0[8], color,2);
+            if(i == show_selected_box_direction && j == show_selected_paired_grasp && show_selected_paired_id == 0){
+                std::cout << " paired grasp id 0 "<< std::endl;
+
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[4],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[3],pts_camera_grasp0[4], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[3], cv::Scalar(200,200,0),2);
+            }
+
+
+            std::vector<cv::Point3f> vertices_grasp1 = std::get<1>(box.get_paired_grasp(j)).get_vertex(); 
+            std::vector<cv::Point2f> pts_camera_grasp1; 
+            cv::projectPoints(vertices_grasp1,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_grasp1);
+
+            for(int kk=0; kk<5; kk++){
+                auto pt = pts_camera_grasp1[kk];
+
+                cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            }
+            
+            cv::line(img,pts_camera_grasp1[5],pts_camera_grasp1[7], color,2);
+            cv::line(img,pts_camera_grasp1[6],pts_camera_grasp1[8], color,2);
+            cv::line(img,pts_camera_grasp1[7],pts_camera_grasp1[8], color,2);
+            if(i == show_selected_box_direction && j == show_selected_paired_grasp && show_selected_paired_id == 1){
+                cv::line(img,pts_camera_grasp1[1],pts_camera_grasp1[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp1[4],pts_camera_grasp1[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp1[3],pts_camera_grasp1[4], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp1[1],pts_camera_grasp1[3], cv::Scalar(200,200,0),2);
+            }
         }
     }
 

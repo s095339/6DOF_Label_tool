@@ -12,6 +12,10 @@ find_package(OpenCV ${OpenCV_REQUIRED_VERSION} REQUIRED)
 # Find wxWidgets
 find_package(wxWidgets REQUIRED COMPONENTS net core base)
 
+# Find Eigen3
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+
+
 # Include wxWidgets
 if(wxWidgets_USE_FILE)
     include(${wxWidgets_USE_FILE})
@@ -20,6 +24,7 @@ endif()
 # Include directories
 include_directories(
     ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
     include
     gui/include
     include/nlohmann  # Add the path to the nlohmann directory
@@ -41,6 +46,8 @@ add_executable(DisplayImage
     gui/src/DataReader.cpp
     gui/include/Annotator.h
     gui/src/Annotator.cpp
+
+    include/grasp.h
 )
 
 # Link libraries
