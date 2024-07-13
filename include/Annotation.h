@@ -89,14 +89,14 @@ public:
     void paired_grasp_remove(int paired_grasp_id);
     void grasp_clean();
     void configure_paired_grasp(
-        int box_id, 
+        int paired_grasp_id, 
         int paired_id,
         cv::Point3f position, 
         cv::Vec3f rotation, 
         float width
     );
 
-    std::tuple<Grasp, Grasp>& get_paired_grasp(int box_id);
+    std::tuple<Grasp, Grasp>& get_paired_grasp(int paired_grasp_id);
     int paired_grasp_number();
     
 

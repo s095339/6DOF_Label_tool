@@ -379,13 +379,13 @@ void Box3d::grasp_clean(){
     this->paired_grasp_list.clear();
 }
 void Box3d::configure_paired_grasp(
-    int box_id, 
+    int paired_grasp_id, 
     int paired_id,
     cv::Point3f position, 
     cv::Vec3f rotation, 
     float width
 ){
-    std::tuple<Grasp, Grasp>& paired_grasp = this->paired_grasp_list.at(box_id);
+    std::tuple<Grasp, Grasp>& paired_grasp = this->paired_grasp_list.at(paired_grasp_id);
     
     Grasp& grasp0 = std::get<0>(paired_grasp);
     Grasp& grasp1 = std::get<1>(paired_grasp);
@@ -398,8 +398,8 @@ void Box3d::configure_paired_grasp(
 
 }
 
-std::tuple<Grasp, Grasp>& Box3d::get_paired_grasp(int box_id){
-    return this->paired_grasp_list.at(box_id);
+std::tuple<Grasp, Grasp>& Box3d::get_paired_grasp(int paired_grasp_id){
+    return this->paired_grasp_list.at(paired_grasp_id);
 }
 int Box3d::paired_grasp_number(){
     return this->paired_grasp_list.size();
