@@ -465,13 +465,15 @@ cv::Mat LabelTool::imshow_with_label(
 
         // print grasp
         
-
+        cv::Scalar color;
         for(int j=0; j< box.paired_grasp_number(); j++){
-            cv::Scalar color(0, 255, 0);
+            
             
             if(j == show_selected_paired_grasp){
                 std::cout << " paired grasp color "<< std::endl;
-                color = cv::Scalar(0,0,255);
+                color = cv::Scalar(255,0,255);
+            }else{
+                color = cv::Scalar(0, 0, 255);
             }
 
             std::vector<cv::Point3f> vertices_grasp0 = std::get<0>(box.get_paired_grasp(j)).get_vertex(); 
@@ -488,7 +490,7 @@ cv::Mat LabelTool::imshow_with_label(
             cv::line(img,pts_camera_grasp0[5],pts_camera_grasp0[7], color,2);
             cv::line(img,pts_camera_grasp0[6],pts_camera_grasp0[8], color,2);
             cv::line(img,pts_camera_grasp0[7],pts_camera_grasp0[8], color,2);
-            if(i == show_selected_box_direction && j == show_selected_paired_grasp && show_selected_paired_id == 0){
+            if(i == show_selected_box_direction && j == show_selected_paired_grasp && (show_selected_paired_id == 0 ||  show_selected_paired_id == 2) ){
                 std::cout << " paired grasp id 0 "<< std::endl;
 
                 cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
@@ -511,7 +513,7 @@ cv::Mat LabelTool::imshow_with_label(
             cv::line(img,pts_camera_grasp1[5],pts_camera_grasp1[7], color,2);
             cv::line(img,pts_camera_grasp1[6],pts_camera_grasp1[8], color,2);
             cv::line(img,pts_camera_grasp1[7],pts_camera_grasp1[8], color,2);
-            if(i == show_selected_box_direction && j == show_selected_paired_grasp && show_selected_paired_id == 1){
+            if(i == show_selected_box_direction && j == show_selected_paired_grasp && (show_selected_paired_id == 1 || show_selected_paired_id == 2) ){
                 cv::line(img,pts_camera_grasp1[1],pts_camera_grasp1[2], cv::Scalar(200,200,0),2);
                 cv::line(img,pts_camera_grasp1[4],pts_camera_grasp1[2], cv::Scalar(200,200,0),2);
                 cv::line(img,pts_camera_grasp1[3],pts_camera_grasp1[4], cv::Scalar(200,200,0),2);
