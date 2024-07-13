@@ -332,6 +332,84 @@ int Box3d::get_cls(){
     return this->cls;
 }
 
+
+//grasp
+
+//================grasp===================================
+void Box3d::paired_grasp_spawn(
+    int cls0, 
+    int cls1,
+    
+    cv::Point3f position0, 
+    cv::Point3f rotation0, 
+    float  width0,
+
+    cv::Point3f position1, 
+    cv::Point3f rotation1, 
+    float   width1
+    
+    ){
+    // grasp0 左 grasp1 右
+    this->paired_grasp_list.push_back(
+        std::tuple<Grasp, Grasp>(
+            Grasp(
+                cls0,
+                position0,
+                rotation0,
+                width0
+            ),
+            Grasp(
+                cls1,
+                position1,
+                rotation1,
+                width1
+            )
+        ) 
+    );
+
+
+}
+void Box3d::paired_grasp_remove(int paired_grasp_id){
+    if(this->paired_grasp_list.empty())
+        std::cout << "[error] no paired grasp in the obj" << std::endl;
+    else
+        this->paired_grasp_list.erase(this->paired_grasp_list.begin() + paired_grasp_id);
+}
+void Box3d::grasp_clean(){
+    this->paired_grasp_list.clear();
+}
+void Box3d::configure_paired_grasp(
+    int box_id, 
+    int paired_id,
+    cv::Point3f position, 
+    cv::Vec3f rotation, 
+    float width
+){
+    std::tuple<Grasp, Grasp>& paired_grasp = this->paired_grasp_list.at(box_id);
+    
+    Grasp& grasp0 = std::get<0>(paired_grasp);
+    Grasp& grasp1 = std::get<1>(paired_grasp);
+
+    if(paired_id == 0)
+        grasp0.configure_grasp(position,rotation,width);
+    else
+        grasp1.configure_grasp(position,rotation,width);
+    
+
+}
+
+std::tuple<Grasp, Grasp>& Box3d::get_paired_grasp(int box_id){
+    return this->paired_grasp_list.at(box_id);
+}
+int Box3d::paired_grasp_number(){
+    return this->paired_grasp_list.size();
+}
+
+
+
+//=============================================================
+
+
 json Box3d::box_to_json(int idx){
     return {
         {"box_id", idx},
