@@ -121,8 +121,22 @@ public:
         wxButton *grasp_z_plus;
         wxStaticText * grasp_z_val;
         wxButton *grasp_z_minus;
-    // grasp rotation
     
+    // grasp rotation
+    wxTextCtrl *grasp_rotate_text; //grasp position 的 stride
+    wxStaticText * grasp_rotation_label;//顯示這裡是location
+        //rx
+        wxButton *grasp_rx_plus;
+        wxStaticText * grasp_rx_val;
+        wxButton *grasp_rx_minus;
+        //ry
+        wxButton *grasp_ry_plus;
+        wxStaticText * grasp_ry_val;
+        wxButton *grasp_ry_minus;
+        //rz
+        wxButton *grasp_rz_plus;
+        wxStaticText * grasp_rz_val;
+        wxButton *grasp_rz_minus;
     // grasp width
 
     //* choose image
@@ -191,7 +205,15 @@ public:
         void OnGraspZPlus(wxCommandEvent & WXUNUSED(event));
         void OnGraspZMinus(wxCommandEvent & WXUNUSED(event));
     //rotation
-
+        //rx
+        void OnGraspRXPlus(wxCommandEvent & WXUNUSED(event));
+        void OnGraspRXMinus(wxCommandEvent & WXUNUSED(event));
+        //ry
+        void OnGraspRYPlus(wxCommandEvent & WXUNUSED(event));
+        void OnGraspRYMinus(wxCommandEvent & WXUNUSED(event));
+        //rz
+        void OnGraspRZPlus(wxCommandEvent & WXUNUSED(event));
+        void OnGraspRZMinus(wxCommandEvent & WXUNUSED(event));
     //width
 
     //*image choose
@@ -272,6 +294,13 @@ const int ID_GRASP_Y_PLUS = 138;
 const int ID_GRASP_Y_MINUS = 139;
 const int ID_GRASP_Z_PLUS = 140;
 const int ID_GRASP_Z_MINUS = 141;
+
+const int ID_GRASP_RX_PLUS = 142;
+const int ID_GRASP_RX_MINUS = 143;
+const int ID_GRASP_RY_PLUS = 144;
+const int ID_GRASP_RY_MINUS = 145;
+const int ID_GRASP_RZ_PLUS = 146;
+const int ID_GRASP_RZ_MINUS = 147;
 
 #endif
 
