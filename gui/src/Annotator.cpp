@@ -74,6 +74,11 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     wxBoxSizer* vbox_rx = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox_ry = new wxBoxSizer(wxVERTICAL);
     wxBoxSizer* vbox_rz = new wxBoxSizer(wxVERTICAL);
+   
+    //grasp
+    wxBoxSizer* vbox_1_5 = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer *hbox_grasp_cls = new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer *hbox_grasp_setting = new wxBoxSizer(wxHORIZONTAL);
 
     wxBoxSizer *hbox2 = new wxBoxSizer(wxHORIZONTAL);// choose the image
     
@@ -150,6 +155,18 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
         box_rz_val = new wxStaticText(paintPanel, wxID_ANY, wxT(""));
         box_rz_minus = new wxButton(paintPanel, ID_RZ_MINUS, wxT("rz-"));
     }
+    
+    //* set grasp
+    cls_grasp_select0 = new wxTextCtrl(paintPanel, wxID_ANY, "" ,wxDefaultPosition, wxDefaultSize);
+    cls_grasp_select1 = new wxTextCtrl(paintPanel, wxID_ANY, "" ,wxDefaultPosition, wxDefaultSize);
+    paired_grasp_spawn = new wxButton(paintPanel, ID_PAIRED_GRASP_SPAWM, wxT("paired grasp spawn "));
+    paired_grasp_remove = new wxButton(paintPanel, ID_PAIRED_GRASP_REMOVE, wxT("paired grasp remove "));
+    paired_grasp_select = new wxComboBox(paintPanel, ID_PAIRED_GRASP_SELECT, wxT("-no paired grasp-"));
+    paired_index_select = new wxComboBox(paintPanel, ID_PAIRED_INDEX_SELECT, wxT("-no paired id-"));
+    paired_grasp_copy = new wxButton(paintPanel, ID_PAIRED_GRASP_COPY, wxT("paired grasp copy "));
+
+    paired_index_select->Append(wxT("paired_id: 0"));
+    paired_index_select->Append(wxT("paired_id: 1"));
     //* choose image [hbox2]
   
      
@@ -260,6 +277,23 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
     vbox->Add(hbox1 , 1, wxEXPAND);
 
+    //grasp
+    //wxBoxSizer* vbox_1_5 = new wxBoxSizer(wxVERTICAL);
+    //wxBoxSizer *hbox_grasp_cls = new wxBoxSizer(wxHORIZONTAL);
+    //wxBoxSizer *hbox_grasp_setting = new wxBoxSizer(wxHORIZONTAL);
+    hbox_grasp_cls->Add(cls_grasp_select0,0,wxALIGN_CENTER);
+    hbox_grasp_cls->Add(cls_grasp_select1,0,wxALIGN_CENTER);
+    hbox_grasp_setting->Add(paired_grasp_spawn,0,wxALIGN_CENTER);
+    hbox_grasp_setting->Add(paired_grasp_remove,0,wxALIGN_CENTER);
+    hbox_grasp_setting->Add(paired_grasp_select,0,wxALIGN_CENTER);
+    hbox_grasp_setting->Add(paired_index_select,0,wxALIGN_CENTER);
+    hbox_grasp_setting->Add(paired_grasp_copy,0,wxALIGN_CENTER);
+
+    vbox_1_5->Add(hbox_grasp_cls);
+    vbox_1_5->Add(hbox_grasp_setting);
+    vbox->Add(vbox_1_5 , 1, wxEXPAND);
+
+
     hbox2->Add(previous_10_image);
     hbox2->Add(previous_image);
     hbox2->Add(img_id_text);
@@ -288,6 +322,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     //* stride
     Connect(wxID_ANY, wxEVT_COMMAND_TEXT_UPDATED,wxCommandEventHandler(Annotator::OnTextUpdate)); 
     //* box configuration
+    {
     //position
     Connect(ID_X_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(Annotator::OnXPlus));
@@ -327,7 +362,21 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
         wxCommandEventHandler(Annotator::OnRZPlus));
     Connect(ID_RZ_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
         wxCommandEventHandler(Annotator::OnRZMinus));
-
+    }
+    // *grasp
+    //grasp setting
+    {
+    Connect(ID_PAIRED_GRASP_SPAWM, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnPairedGraspSpawn));
+    Connect(ID_PAIRED_GRASP_REMOVE, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnPairedGraspRemove));
+    paired_grasp_select->Connect(ID_PAIRED_GRASP_SELECT, wxEVT_COMMAND_COMBOBOX_SELECTED,
+        wxCommandEventHandler(Annotator::OnPairedGraspSelect), NULL, this);
+    paired_index_select->Connect(ID_PAIRED_INDEX_SELECT, wxEVT_COMMAND_COMBOBOX_SELECTED,
+        wxCommandEventHandler(Annotator::OnPairedIdSelect), NULL, this);
+     Connect(ID_PAIRED_GRASP_COPY, wxEVT_COMMAND_BUTTON_CLICKED,
+        wxCommandEventHandler(Annotator::OnPairedGraspCopy));
+    }
     //*image choose
     Connect(ID_PRE_IMG, wxEVT_COMMAND_BUTTON_CLICKED, 
       wxCommandEventHandler(Annotator::OnPreviousClick));
@@ -425,6 +474,14 @@ void Annotator::OnComboBoxSelect(wxCommandEvent& event)
     cv::Point3f pos = labeltool->get_anno().get_box(box_id).get_position();
     cv::Point3f size = labeltool->get_anno().get_box(box_id).get_size();
 
+
+    Box3d & box = labeltool->get_anno().get_box(box_id);
+
+    paired_grasp_select->Clear();
+        for(int i=0; i<box.paired_grasp_number();i++){
+            paired_grasp_select->Append(wxString::Format("paired id: %d ", i));
+        }
+    
     updateLabel();
     ShowImage(box_id);
 }
@@ -670,6 +727,129 @@ void Annotator::OnRZMinus(wxCommandEvent & WXUNUSED(event)){
     ShowImage(box_id);
     updateLabel();
 }
+//* Grasp         *//
+
+//set grasp
+void Annotator::OnPairedGraspSpawn(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+
+    int cls0 = stoi(cls_grasp_select0->GetValue().ToStdString());
+    int cls1 = stoi(cls_grasp_select1->GetValue().ToStdString());
+    
+
+    cv::Point3f pos = box.get_position();
+    cv::Vec3f size = box.get_size();
+
+    cv::Point3f grasp0_position(
+        pos.x + size[0]/2,
+        pos.y,
+        pos.z
+    );
+    cv::Point3f grasp1_position(
+        pos.x - size[0]/2,
+        pos.y,
+        pos.z
+    );
+    cv::Vec3f grasp0_rotation(
+        0.0,
+        180.0 * M_PI/180.0,
+        0.0
+    );
+    cv::Vec3f grasp1_rotation(
+        0.0,
+        0.0,
+        0.0
+    );
+
+
+    try
+    {
+        
+        if (cls0 <0  || cls1 <0){
+            wxLogError("Number should >=  0");
+            return;
+        }
+        //box_count ++;
+        //box_id  = box_count -1; //set to latest box    
+        box.paired_grasp_spawn(
+            cls0, cls1,
+            grasp0_position,
+            grasp0_rotation,
+            0.04,
+            grasp1_position,
+            grasp1_rotation,
+            0.04
+        );
+        cout << "Grasp Spawn" << endl;
+        
+        paired_grasp_select->Append(wxString::Format("paired grasp id: %d ", box.paired_grasp_number()-1 ));
+
+        ShowImage(box_id, box.paired_grasp_number()-1, -1);
+
+        return; 
+    }
+    catch(const std::exception& e)
+    {
+        wxLogError("Please input Number");
+        return;
+    }
+
+
+}
+void Annotator::OnPairedGraspRemove(wxCommandEvent & WXUNUSED(event)){
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    //box.paired_grasp_remove(paired_grasp_id);
+
+
+
+    paired_grasp_id = paired_grasp_select->GetSelection();
+    if (paired_grasp_id != wxNOT_FOUND)
+    {
+        box.paired_grasp_remove(paired_grasp_id);
+        //box_count--;
+
+        paired_grasp_select->Clear();
+        for(int i=0; i<box.paired_grasp_number();i++){
+            paired_grasp_select->Append(wxString::Format("paired id: %d ", i));
+        }
+    }
+    else
+    {
+        wxMessageBox("No item selected", "Error", wxOK | wxICON_ERROR);
+        return;
+    }
+    paired_grasp_id--;
+
+
+    updateLabel();
+    ShowImage();
+}
+void Annotator::OnPairedGraspSelect(wxCommandEvent& event){
+    //Combo box event
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    paired_grasp_id = paired_grasp_select->GetSelection();
+    std::cout << "Select paired grasp: " << paired_grasp_id << std::endl;
+
+    updateLabel();
+    ShowImage(box_id, paired_grasp_id, -1);
+}
+void Annotator::OnPairedIdSelect(wxCommandEvent & event){
+    //Combo box event
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+
+
+    paired_id = paired_index_select->GetSelection();
+    std::cout << "Select paired_id:  " << paired_id << std::endl;
+    updateLabel();
+    ShowImage(box_id , paired_grasp_id, paired_id);
+}
+void Annotator::OnPairedGraspCopy(wxCommandEvent & WXUNUSED(event)){
+    
+}
+
+
+
+
 //* Choose Image *//
 void Annotator::OnNextClick(wxCommandEvent & WXUNUSED(event))
 {   
@@ -714,10 +894,23 @@ void Annotator::OnPrevious10Click(wxCommandEvent & WXUNUSED(event))
     //cv::waitKey();
     ShowImage(box_id);
 }
-void Annotator::ShowImage(int show_selected_box_direction){
+void Annotator::ShowImage(
+    int show_selected_box_direction,
+    int show_selected_paired_grasp,
+    int show_selected_paired_id
+){
 
     cv::Mat RGB_img;
-    cv::cvtColor(labeltool->imshow_with_label(image_id, show_selected_box_direction), RGB_img, cv::COLOR_RGB2BGR);
+    cv::cvtColor(
+        labeltool->imshow_with_label(
+            image_id, 
+            show_selected_box_direction,
+            show_selected_paired_grasp,
+            show_selected_paired_id
+            ), 
+        RGB_img, 
+        cv::COLOR_RGB2BGR
+        );
     cv::imshow("Stream", RGB_img);
 }
 void Annotator::updateLabel(){

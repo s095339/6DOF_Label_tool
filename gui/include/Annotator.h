@@ -18,11 +18,22 @@ private:
     float stride = 0.05;
     float rotate = 5 * M_PI/180; 
     float size_diff = 0.05;
+
+// grasp settting
+    int paired_grasp_id;
+    int paired_id;
+
+
 // image choose
     int image_id;
     //int max_img;
-    void ShowImage(int show_selected_box_direction = -1);
+    void ShowImage(
+        int show_selected_box_direction = -1,
+        int show_selected_paired_grasp = -1,
+        int show_selected_paired_id = -1
+        );
     void updateLabel();
+
 public:
     Annotator(const wxString& title,  wxBitmapType format, std::string);
     //API
@@ -86,6 +97,14 @@ public:
         wxButton *box_rz_plus;
         wxStaticText * box_rz_val;
         wxButton *box_rz_minus;
+    //set paired grasp
+        wxTextCtrl *cls_grasp_select0;
+        wxTextCtrl *cls_grasp_select1;
+        wxButton *paired_grasp_spawn;
+        wxButton *paired_grasp_remove;
+        wxComboBox *paired_grasp_select;
+        wxComboBox *paired_index_select;
+        wxButton *paired_grasp_copy;
     //* choose image
     wxButton * previous_10_image;
     wxButton * next_10_image;
@@ -133,6 +152,15 @@ public:
     void OnRYMinus(wxCommandEvent & WXUNUSED(event));
     void OnRZPlus(wxCommandEvent & WXUNUSED(event));
     void OnRZMinus(wxCommandEvent & WXUNUSED(event));
+
+    //* set grasp
+    void OnPairedGraspSpawn(wxCommandEvent & WXUNUSED(event));
+    void OnPairedGraspRemove(wxCommandEvent & WXUNUSED(event));
+    void OnPairedGraspSelect(wxCommandEvent& event);
+    void OnPairedIdSelect(wxCommandEvent & WXUNUSED(event));
+    void OnPairedGraspCopy(wxCommandEvent & WXUNUSED(event));
+
+
     //*image choose
     void OnPreviousClick(wxCommandEvent & WXUNUSED(event));
     void OnNextClick(wxCommandEvent & WXUNUSED(event));
@@ -187,6 +215,23 @@ const int ID_DUMP_DATASET = 125;
 //const int ID_ROTATE_TEXT = 129;
 
 const int ID_ROTATE_WORLD = 130;
+
+
+/*
+wxTextCtrl *cls_grasp_select0; //不用事件
+wxTextCtrl *cls_grasp_select1; //不用事件
+wxButton *paired_grasp_spawn;
+wxButton *paired_grasp_remove;
+wxComboBox *paired_grasp_select;
+wxRadioButton *paired_index_select;
+wxButton *paired_grasp_copy;
+*/
+
+const int ID_PAIRED_GRASP_SPAWM = 131;
+const int ID_PAIRED_GRASP_SELECT = 132; //combo box
+const int ID_PAIRED_GRASP_REMOVE = 133;
+const int ID_PAIRED_INDEX_SELECT = 134;
+const int ID_PAIRED_GRASP_COPY = 135;
 
 #endif
 
