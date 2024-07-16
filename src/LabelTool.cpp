@@ -384,15 +384,15 @@ int LabelTool::get_data_length(){
 cv::Mat LabelTool::imshow_with_label(
     int idx, 
     int show_selected_box_direction,
-    int show_selected_paired_grasp,
+    int show_selected_grasp,
     int show_selected_paired_id
     ){
                                     // image id   //the id of the box 
     //
     cv::Point3f origin(0.0,0.0,0.0);
-    cv::Point3f xaxis(0.15,0.0,0.0);
-    cv::Point3f yaxis(0.0,0.15,0.0);
-    cv::Point3f zaxis(0.0,0.0,0.15);
+    cv::Point3f xaxis(0.05,0.0,0.0);
+    cv::Point3f yaxis(0.0,0.05,0.0);
+    cv::Point3f zaxis(0.0,0.0,0.05);
     std::vector<cv::Point3f> axis_point = {   
         origin,
         xaxis,
@@ -466,9 +466,42 @@ cv::Mat LabelTool::imshow_with_label(
         // print grasp
         
         cv::Scalar color;
+
+
+        for(int j=0; j<box.single_grasp_number(); j++){
+            if(j == show_selected_grasp){
+                color = cv::Scalar(0,200,200);
+            }else{
+                color = cv::Scalar(0, 0, 255);
+            }
+
+            std::vector<cv::Point3f> vertices_grasp0 = box.get_single_grasp(j).get_vertex(); 
+            std::vector<cv::Point2f> pts_camera_grasp0; 
+            cv::projectPoints(vertices_grasp0,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_grasp0);
+
+            for(int kk=0; kk<5; kk++){
+                auto pt = pts_camera_grasp0[kk];
+
+                cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            }
+
+
+            cv::line(img,pts_camera_grasp0[5],pts_camera_grasp0[7], color,2);
+            cv::line(img,pts_camera_grasp0[6],pts_camera_grasp0[8], color,2);
+            cv::line(img,pts_camera_grasp0[7],pts_camera_grasp0[8], color,2);
+            cv::line(img,pts_camera_grasp0[9],pts_camera_grasp0[10], color,2);
+            if(i == show_selected_box_direction && j == show_selected_grasp){
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[4],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[3],pts_camera_grasp0[4], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[3], cv::Scalar(200,200,0),2);
+            }
+
+        }
         for(int j=0; j< box.paired_grasp_number(); j++){
             
-            
+            int show_selected_paired_grasp = show_selected_grasp-box.single_grasp_number();
+
             if(j == show_selected_paired_grasp){
                 std::cout << " paired grasp color "<< std::endl;
                 color = cv::Scalar(255,0,255);

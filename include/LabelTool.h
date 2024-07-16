@@ -105,7 +105,7 @@ public:
     cv::Mat imshow_with_label(
         int idx, 
         int show_selected_box_direction = -1, 
-        int show_selected_paired_grasp = -1,
+        int show_selected_grasp = -1,
         int show_selected_paired_id = -1
          ); //for test
 
