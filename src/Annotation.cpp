@@ -336,6 +336,26 @@ int Box3d::get_cls(){
 //grasp
 
 //================grasp===================================
+
+void Box3d::single_grasp_spawn(
+        int cls, 
+        
+        cv::Point3f position, 
+        cv::Point3f rotation, 
+        float  width
+    )
+{
+    this->single_grasp_list.push_back(
+        Grasp(
+                cls,
+                position,
+                rotation,
+                width
+            )
+    );
+}
+
+
 void Box3d::paired_grasp_spawn(
     int cls0, 
     int cls1,
@@ -348,7 +368,8 @@ void Box3d::paired_grasp_spawn(
     cv::Point3f rotation1, 
     float   width1
     
-    ){
+    )
+{
     // grasp0 左 grasp1 右
     this->paired_grasp_list.push_back(
         std::tuple<Grasp, Grasp>(
@@ -375,9 +396,32 @@ void Box3d::paired_grasp_remove(int paired_grasp_id){
     else
         this->paired_grasp_list.erase(this->paired_grasp_list.begin() + paired_grasp_id);
 }
+void Box3d::single_grasp_remove(int single_grasp_id){
+    if(this->single_grasp_list.empty())
+        std::cout << "[error] no single grasp in the obj" << std::endl;
+    else
+        this->single_grasp_list.erase(this->single_grasp_list.begin() + single_grasp_id);
+}
+
+
 void Box3d::grasp_clean(){
+    this->single_grasp_list.clear();
     this->paired_grasp_list.clear();
 }
+
+void Box3d::configure_single_grasp(
+    int single_grasp_id, 
+    cv::Point3f position, 
+    cv::Vec3f rotation, 
+    float width
+){
+    Grasp& single_grasp = this->single_grasp_list.at(single_grasp_id);
+    
+    single_grasp.configure_grasp(position,rotation,width);
+
+}
+
+
 void Box3d::configure_paired_grasp(
     int paired_grasp_id, 
     int paired_id,
@@ -398,8 +442,15 @@ void Box3d::configure_paired_grasp(
 
 }
 
+Grasp& Box3d::get_single_grasp(int single_grasp_id){
+    return this->single_grasp_list.at(single_grasp_id);
+}
 std::tuple<Grasp, Grasp>& Box3d::get_paired_grasp(int paired_grasp_id){
     return this->paired_grasp_list.at(paired_grasp_id);
+}
+
+int Box3d::single_grasp_number(){
+    return this->single_grasp_list.size();
 }
 int Box3d::paired_grasp_number(){
     return this->paired_grasp_list.size();
