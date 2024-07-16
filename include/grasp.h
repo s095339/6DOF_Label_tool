@@ -166,6 +166,9 @@ public:
         this->rotation += rotation_in;
         this->width += width;
 
+        
+        if (this->width<0.01)this->width=0.01;
+        
         build_vertices();
         this->vertices = rotate(this->vertices, this->rotation);
     }
