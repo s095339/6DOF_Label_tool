@@ -140,7 +140,10 @@ public:
         wxStaticText * grasp_rz_val;
         wxButton *grasp_rz_minus;
     // grasp width
-
+    wxStaticText * grasp_width_label;//顯示這裡是location
+        wxButton *grasp_w_plus;
+        wxStaticText * grasp_w_val;
+        wxButton *grasp_w_minus;
     //* choose image
     wxButton * previous_10_image;
     wxButton * next_10_image;
@@ -218,7 +221,8 @@ public:
         void OnGraspRZPlus(wxCommandEvent & WXUNUSED(event));
         void OnGraspRZMinus(wxCommandEvent & WXUNUSED(event));
     //width
-
+        void OnGraspWPlus(wxCommandEvent & WXUNUSED(event));
+        void OnGraspWMinus(wxCommandEvent & WXUNUSED(event));
     //*image choose
     void OnPreviousClick(wxCommandEvent & WXUNUSED(event));
     void OnNextClick(wxCommandEvent & WXUNUSED(event));
@@ -265,6 +269,7 @@ const int ID_RY_MINUS = 1124;
 const int ID_RZ_PLUS = 1125;
 const int ID_RZ_MINUS = 1126;
 
+
 const int ID_SAVE_JSON = 123;
 const int ID_LOAD_JSON = 122;
 const int ID_DUMP_DATASET = 125;
@@ -305,6 +310,8 @@ const int ID_GRASP_RY_MINUS = 145;
 const int ID_GRASP_RZ_PLUS = 146;
 const int ID_GRASP_RZ_MINUS = 147;
 
+const int ID_GRASP_W_PLUS = 149;
+const int ID_GRASP_W_MINUS = 150; 
 #endif
 
  
