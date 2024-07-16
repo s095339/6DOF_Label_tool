@@ -20,7 +20,7 @@ private:
     float size_diff = 0.05;
 
 // grasp settting
-    int paired_grasp_id;
+    int grasp_id;
     int paired_id;
 
 
@@ -33,7 +33,7 @@ private:
         int show_selected_paired_id = -1
         );
     void updateLabel();
-
+    void update_grasp_select();
 public:
     Annotator(const wxString& title,  wxBitmapType format, std::string);
     //API
@@ -101,6 +101,8 @@ public:
     //set paired grasp
     wxTextCtrl *cls_grasp_select0;
     wxTextCtrl *cls_grasp_select1;
+
+    wxButton *single_grasp_spawn;
     wxButton *paired_grasp_spawn;
     wxButton *paired_grasp_remove;
     wxComboBox *paired_grasp_select;
@@ -188,6 +190,7 @@ public:
     void OnRZMinus(wxCommandEvent & WXUNUSED(event));
 
     //* set grasp
+    void OnSingleGraspSpawn(wxCommandEvent & WXUNUSED(event));
     void OnPairedGraspSpawn(wxCommandEvent & WXUNUSED(event));
     void OnPairedGraspRemove(wxCommandEvent & WXUNUSED(event));
     void OnPairedGraspSelect(wxCommandEvent& event);
@@ -281,7 +284,7 @@ wxComboBox *paired_grasp_select;
 wxRadioButton *paired_index_select;
 wxButton *paired_grasp_copy;
 */
-
+const int ID_SINGLE_GRASP_SPAWM = 148;
 const int ID_PAIRED_GRASP_SPAWM = 131;
 const int ID_PAIRED_GRASP_SELECT = 132; //combo box
 const int ID_PAIRED_GRASP_REMOVE = 133;
