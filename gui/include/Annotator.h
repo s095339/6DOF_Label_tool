@@ -200,29 +200,9 @@ public:
     void OnPairedIdSelect(wxCommandEvent & WXUNUSED(event));
     void OnPairedGraspCopy(wxCommandEvent & WXUNUSED(event));
     //*grasp configuration
-    //position
-        //x
-        void OnGraspXPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspXMinus(wxCommandEvent & WXUNUSED(event));
-        //y
-        void OnGraspYPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspYMinus(wxCommandEvent & WXUNUSED(event));
-        //z
-        void OnGraspZPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspZMinus(wxCommandEvent & WXUNUSED(event));
-    //rotation
-        //rx
-        void OnGraspRXPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspRXMinus(wxCommandEvent & WXUNUSED(event));
-        //ry
-        void OnGraspRYPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspRYMinus(wxCommandEvent & WXUNUSED(event));
-        //rz
-        void OnGraspRZPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspRZMinus(wxCommandEvent & WXUNUSED(event));
-    //width
-        void OnGraspWPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspWMinus(wxCommandEvent & WXUNUSED(event));
+
+    void OnGraspConfigure(wxCommandEvent & event);
+
     //*image choose
     void OnPreviousClick(wxCommandEvent & WXUNUSED(event));
     void OnNextClick(wxCommandEvent & WXUNUSED(event));
