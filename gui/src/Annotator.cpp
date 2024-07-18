@@ -428,43 +428,43 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     {
     //position
     Connect(ID_X_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnXPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_X_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnXMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_Y_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnYPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_Y_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnYMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_Z_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnZPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_Z_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnZMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     //size
     Connect(ID_W_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnWPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_W_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnWMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_H_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnHPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_H_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnHMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_D_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnDPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_D_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnDMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     //rotation
     Connect(ID_RX_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnRXPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_RX_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnRXMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_RY_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnRYPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_RY_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnRYMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_RZ_PLUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnRZPlus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     Connect(ID_RZ_MINUS, wxEVT_COMMAND_BUTTON_CLICKED,
-        wxCommandEventHandler(Annotator::OnRZMinus));
+        wxCommandEventHandler(Annotator::OnBoxConfigure));
     }
     // *grasp
     //grasp setting
@@ -673,203 +673,87 @@ void Annotator::OnTextUpdate(wxCommandEvent& event){
     }
 }
 //* configurate box *//
-//position
+void Annotator::OnBoxConfigure(wxCommandEvent& event){
+    cv::Point3f pos_diff(0.0, 0.0, 0.0);
+    cv::Point3f rot_diff(0.0, 0.0, 0.0);
+    cv::Point3f size_d(0.0, 0.0, 0.0); //size_diff已經被用了= =
 
-void Annotator::OnXPlus(wxCommandEvent & WXUNUSED(event)){
-    //float rotate_angle = 5.0;
-    //float rotate_x =  3.14159265358979323846/180.0 * rotate_angle; 
-    
+    //========================================//
+    // Get Button ID                          //
+    //========================================//
+
+    buttonid id = event.GetId();
+    switch(id){
+        case ID_X_PLUS:
+            pos_diff.x = stride;
+            break;
+        case ID_X_MINUS:
+            pos_diff.x = -stride;
+            break;
+        case ID_Y_PLUS:
+            pos_diff.y = stride;
+            break;
+        case ID_Y_MINUS:
+            pos_diff.y = -stride;
+            break;
+        case ID_Z_PLUS:
+            pos_diff.z = stride;
+            break;
+        case ID_Z_MINUS:
+            pos_diff.z = -stride;
+            break;
+        case ID_W_PLUS:
+            size_d.x = size_diff;
+            break;
+        case ID_W_MINUS:
+            size_d.x = -size_diff;
+            break;
+        case ID_H_PLUS:
+            size_d.y = size_diff;
+            break;
+        case ID_H_MINUS:
+            size_d.y = -size_diff;
+            break;
+        case ID_D_PLUS:
+            size_d.z = size_diff;
+            break;
+        case ID_D_MINUS:
+            size_d.z = -size_diff;
+            break;
+        case ID_RX_PLUS:
+            rot_diff.x = rotate;
+            break;
+        case ID_RX_MINUS:
+            rot_diff.x = -rotate;
+            break;
+        case ID_RY_PLUS:
+            rot_diff.y = rotate;
+            break;
+        case ID_RY_MINUS:
+            rot_diff.y = -rotate;
+            break;
+        case ID_RZ_PLUS:
+            rot_diff.z = rotate;
+            break;
+        case ID_RZ_MINUS:
+            rot_diff.z = -rotate;
+            break;
+        default:
+            break;
+    }
+    //std::cout << "[box configure] button id = "<< id << std::endl;
+
     labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(stride, 0, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,0)
+                                    pos_diff, 
+                                    rot_diff, 
+                                    size_d
     );
-
-    ShowImage(box_id);
     updateLabel();
-}
-void Annotator::OnXMinus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(-stride, 0, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,0)
-    );
-
     ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnYPlus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, stride, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,0)
-    );
 
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnYMinus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, -stride, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnZPlus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, stride), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnZMinus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, -stride), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-//siZe
-
-void Annotator::OnWPlus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(size_diff,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnWMinus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(-size_diff,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnHPlus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, size_diff/2, 0), //確保箱子還是放在地板上
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,size_diff,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnHMinus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, -size_diff/2, 0), //確保箱子還是放在地板上
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,-size_diff,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnDPlus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,size_diff)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnDMinus(wxCommandEvent & WXUNUSED(event)){
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,0,0), 
-                                    cv::Point3f(0,0,-size_diff)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
 }
 
-//rotation
-void Annotator::OnRXPlus(wxCommandEvent & WXUNUSED(event)){
-    //float rotate_angle = 5.0;
-    //float rotate_x =  3.14159265358979323846/180.0 * rotate_angle; 
-    std::cout << "rotateRX" << std::endl;
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(rotate,0,0), 
-                                    cv::Point3f(0,0,0)
-    );
 
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnRXMinus(wxCommandEvent & WXUNUSED(event)){
-    std::cout << "rotate-RX" << std::endl;
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(-rotate,0,0), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnRYPlus(wxCommandEvent & WXUNUSED(event)){
-    std::cout << "rotateRY" << std::endl;
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,rotate,0), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnRYMinus(wxCommandEvent & WXUNUSED(event)){
-    std::cout << "rotate-RY" << std::endl;
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,-rotate,0), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnRZPlus(wxCommandEvent & WXUNUSED(event)){
-    std::cout << "rotateRZ" << std::endl;
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,0,rotate), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
-void Annotator::OnRZMinus(wxCommandEvent & WXUNUSED(event)){
-    std::cout << "rotate-RZ" << std::endl;
-    labeltool->get_anno().configure_box(this->box_id, 
-                                    cv::Point3f(0, 0, 0), 
-                                    cv::Point3f(0,0,-rotate), 
-                                    cv::Point3f(0,0,0)
-    );
-
-    ShowImage(box_id);
-    updateLabel();
-}
 //* Grasp         *//
 
 
@@ -1112,7 +996,7 @@ void Annotator::OnGraspConfigure(wxCommandEvent & event){
     // Get Button ID                          //
     //========================================//
 
-    int id = event.GetId();  // Get the ID of the button that triggered the event
+    buttonid id = event.GetId();  // Get the ID of the button that triggered the event
     
     cv::Point3f pos_diff(0.0, 0.0, 0.0);
     cv::Vec3f rot_diff(0.0, 0.0, 0.0);
@@ -1166,7 +1050,7 @@ void Annotator::OnGraspConfigure(wxCommandEvent & event){
             return;
     }
 
-    std::cout << "[grasp configure] button id = "<< id << std::endl;
+    //std::cout << "[grasp configure] button id = "<< id << std::endl;
 
     int paired_grasp_id = grasp_id - box.single_grasp_number();
     if(paired_grasp_id<0)

@@ -170,27 +170,8 @@ public:
     void OnTextUpdate(wxCommandEvent& event);
 
     //*box configuration
-    //position
-    void OnXPlus(wxCommandEvent & WXUNUSED(event));
-    void OnXMinus(wxCommandEvent & WXUNUSED(event));
-    void OnYPlus(wxCommandEvent & WXUNUSED(event));
-    void OnYMinus(wxCommandEvent & WXUNUSED(event));
-    void OnZPlus(wxCommandEvent & WXUNUSED(event));
-    void OnZMinus(wxCommandEvent & WXUNUSED(event));
-    //size
-    void OnWPlus(wxCommandEvent & WXUNUSED(event));
-    void OnWMinus(wxCommandEvent & WXUNUSED(event));
-    void OnHPlus(wxCommandEvent & WXUNUSED(event));
-    void OnHMinus(wxCommandEvent & WXUNUSED(event));
-    void OnDPlus(wxCommandEvent & WXUNUSED(event));
-    void OnDMinus(wxCommandEvent & WXUNUSED(event));
-    //rotation
-    void OnRXPlus(wxCommandEvent & WXUNUSED(event));
-    void OnRXMinus(wxCommandEvent & WXUNUSED(event));
-    void OnRYPlus(wxCommandEvent & WXUNUSED(event));
-    void OnRYMinus(wxCommandEvent & WXUNUSED(event));
-    void OnRZPlus(wxCommandEvent & WXUNUSED(event));
-    void OnRZMinus(wxCommandEvent & WXUNUSED(event));
+    void OnBoxConfigure(wxCommandEvent& event);
+    
 
     //* set grasp
     void OnSingleGraspSpawn(wxCommandEvent & WXUNUSED(event));
@@ -259,7 +240,7 @@ const int ID_DUMP_DATASET = 125;
 
 const int ID_ROTATE_WORLD = 130;
 
-
+typedef int buttonid;
 /*
 wxTextCtrl *cls_grasp_select0; //不用事件
 wxTextCtrl *cls_grasp_select1; //不用事件
