@@ -503,7 +503,7 @@ cv::Mat LabelTool::imshow_with_label(
             int show_selected_paired_grasp = show_selected_grasp-box.single_grasp_number();
 
             if(j == show_selected_paired_grasp){
-                std::cout << " paired grasp color "<< std::endl;
+                //std::cout << " paired grasp color "<< std::endl;
                 color = cv::Scalar(255,0,255);
             }else{
                 color = cv::Scalar(0, 0, 255);
@@ -525,7 +525,7 @@ cv::Mat LabelTool::imshow_with_label(
             cv::line(img,pts_camera_grasp0[7],pts_camera_grasp0[8], color,2);
             cv::line(img,pts_camera_grasp0[9],pts_camera_grasp0[10], color,2);
             if(i == show_selected_box_direction && j == show_selected_paired_grasp && (show_selected_paired_id == 0 ||  show_selected_paired_id == 2) ){
-                std::cout << " paired grasp id 0 "<< std::endl;
+                //std::cout << " paired grasp id 0 "<< std::endl;
 
                 cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
                 cv::line(img,pts_camera_grasp0[4],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);

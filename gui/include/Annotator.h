@@ -170,27 +170,8 @@ public:
     void OnTextUpdate(wxCommandEvent& event);
 
     //*box configuration
-    //position
-    void OnXPlus(wxCommandEvent & WXUNUSED(event));
-    void OnXMinus(wxCommandEvent & WXUNUSED(event));
-    void OnYPlus(wxCommandEvent & WXUNUSED(event));
-    void OnYMinus(wxCommandEvent & WXUNUSED(event));
-    void OnZPlus(wxCommandEvent & WXUNUSED(event));
-    void OnZMinus(wxCommandEvent & WXUNUSED(event));
-    //size
-    void OnWPlus(wxCommandEvent & WXUNUSED(event));
-    void OnWMinus(wxCommandEvent & WXUNUSED(event));
-    void OnHPlus(wxCommandEvent & WXUNUSED(event));
-    void OnHMinus(wxCommandEvent & WXUNUSED(event));
-    void OnDPlus(wxCommandEvent & WXUNUSED(event));
-    void OnDMinus(wxCommandEvent & WXUNUSED(event));
-    //rotation
-    void OnRXPlus(wxCommandEvent & WXUNUSED(event));
-    void OnRXMinus(wxCommandEvent & WXUNUSED(event));
-    void OnRYPlus(wxCommandEvent & WXUNUSED(event));
-    void OnRYMinus(wxCommandEvent & WXUNUSED(event));
-    void OnRZPlus(wxCommandEvent & WXUNUSED(event));
-    void OnRZMinus(wxCommandEvent & WXUNUSED(event));
+    void OnBoxConfigure(wxCommandEvent& event);
+    
 
     //* set grasp
     void OnSingleGraspSpawn(wxCommandEvent & WXUNUSED(event));
@@ -200,29 +181,9 @@ public:
     void OnPairedIdSelect(wxCommandEvent & WXUNUSED(event));
     void OnPairedGraspCopy(wxCommandEvent & WXUNUSED(event));
     //*grasp configuration
-    //position
-        //x
-        void OnGraspXPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspXMinus(wxCommandEvent & WXUNUSED(event));
-        //y
-        void OnGraspYPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspYMinus(wxCommandEvent & WXUNUSED(event));
-        //z
-        void OnGraspZPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspZMinus(wxCommandEvent & WXUNUSED(event));
-    //rotation
-        //rx
-        void OnGraspRXPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspRXMinus(wxCommandEvent & WXUNUSED(event));
-        //ry
-        void OnGraspRYPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspRYMinus(wxCommandEvent & WXUNUSED(event));
-        //rz
-        void OnGraspRZPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspRZMinus(wxCommandEvent & WXUNUSED(event));
-    //width
-        void OnGraspWPlus(wxCommandEvent & WXUNUSED(event));
-        void OnGraspWMinus(wxCommandEvent & WXUNUSED(event));
+
+    void OnGraspConfigure(wxCommandEvent & event);
+
     //*image choose
     void OnPreviousClick(wxCommandEvent & WXUNUSED(event));
     void OnNextClick(wxCommandEvent & WXUNUSED(event));
@@ -279,7 +240,7 @@ const int ID_DUMP_DATASET = 125;
 
 const int ID_ROTATE_WORLD = 130;
 
-
+typedef int buttonid;
 /*
 wxTextCtrl *cls_grasp_select0; //不用事件
 wxTextCtrl *cls_grasp_select1; //不用事件
