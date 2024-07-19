@@ -173,7 +173,16 @@ public:
         this->vertices = rotate(this->vertices, this->rotation);
     }
     
-    json grasp_to_json(int );
+    json grasp_to_json(int idx){
+        
+        return{
+            {"grasp_id", idx},
+            {"class_id", this->cls},
+            {"position", {this->position.x, this->position.y, this->position.z}},
+            {"rotation", {this->rotation[0], this->rotation[1], this->rotation[2]}},
+            {"width", this->width}
+        };
+    }
 
 
 

@@ -1300,6 +1300,8 @@ void Annotator::OnLoadJson(wxCommandEvent & WXUNUSED(event)){
             for(int i=0; i<labeltool->get_anno().box_number();i++){
                 box_select->Append(wxString::Format("box id: %d cls: %d", i, labeltool->get_anno().get_box(i).get_cls()));
             }
+            box_id = 0;
+            update_grasp_select();
             ShowImage();
         }
 
