@@ -624,7 +624,7 @@ void Annotator::OnComboBoxSelect(wxCommandEvent& event)
         for(int i=0; i<box.paired_grasp_number();i++){
             paired_grasp_select->Append(wxString::Format("paired id: %d ", i));
         }
-    
+    update_grasp_select();
     updateLabel();
     ShowImage(box_id);
 }
@@ -940,7 +940,7 @@ void Annotator::OnPairedGraspRemove(wxCommandEvent & WXUNUSED(event)){
         wxMessageBox("No item selected", "Error", wxOK | wxICON_ERROR);
         return;
     }
-    grasp_id--;
+    if(grasp_id>0)grasp_id--;
 
 
     updateLabel();
@@ -1200,6 +1200,8 @@ void Annotator::updateLabel(){
     //pos
     
     Box3d& box =  labeltool->get_anno().get_box(box_id);
+    
+    //update_grasp_select();
 
     if(box.paired_grasp_number() + box.single_grasp_number() == 0 || grasp_id > box.single_grasp_number() + box.paired_grasp_number()-1) return;
     

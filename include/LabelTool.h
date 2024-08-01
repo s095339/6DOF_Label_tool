@@ -90,8 +90,8 @@ private:
     int aruco_dict;
     //depth 
     bool is_depth;
-    bool _get_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f, cv::Vec3f&, cv::Vec3f&);
-
+    bool _get_box_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f, cv::Vec3f&, cv::Vec3f&);
+    bool _get_grasp_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f&, cv::Vec3f&, float, float);
 
 public:
     LabelTool(DataLoader&); //Constructor

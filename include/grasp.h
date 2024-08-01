@@ -25,7 +25,7 @@ private:
     cv::Point3f position;
     cv::Vec3f rotation;    
     float width;
-    std::vector<cv::Point3f> vertices; //7 vertice
+    std::vector<cv::Point3f> vertices; //11 vertice
 public:    
     Grasp(
         int cls,
@@ -63,12 +63,14 @@ public:
         gripper_bottom = cy - this->width / 2;
         
         this->vertices = {
+            // For PnP algorithm
             cv::Point3f(cx, cy, cz), //grasp center point
             cv::Point3f(left, top, cz), // top left
             cv::Point3f(left, bottom, cz), // bottom left
             cv::Point3f(right, top, cz), // top right
             cv::Point3f(right, bottom, cz), // bottom right
 
+            //For display
             cv::Point3f(left, gripper_top, cz), //top_gripper  5
             cv::Point3f(left, gripper_bottom, cz), //buttom_gripper  6
             cv::Point3f((right+left)/2, gripper_top, cz), //top_gripper  7
