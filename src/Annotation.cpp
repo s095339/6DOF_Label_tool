@@ -185,11 +185,11 @@ void Box3d::rotate_box(cv::Vec3f rotation){
     std::cout << "rotation rx: " << rot.x/M_PI << "π ,ry: "<< rot.y/M_PI <<"π ,rz: " << rot.z/M_PI <<"π "<< std::endl;
 }
 void Box3d::configure_box(
-    cv::Point3f position, cv::Vec3f rotation_in, cv::Vec3f size
+    cv::Point3f position_in, cv::Vec3f rotation_in, cv::Vec3f size
 )
 {   
 
-    this->position += position;
+    this->position += position_in;
     this->rotation += rotation_in;
     this->size += size;
 
@@ -244,6 +244,24 @@ void Box3d::configure_box(
         //rhs of right center
         cv::Point3f(right+0.15, cy, cz)
     };
+    
+    for (auto & s_g : this->single_grasp_list){
+        s_g.configure_grasp(
+            position_in, rotation_in, 0.0
+        );
+    }
+
+    for (auto & p_g_tuple : this->paired_grasp_list){
+        auto& p_g_0 = std::get<0>(p_g_tuple);
+        auto& p_g_1 = std::get<1>(p_g_tuple);
+        p_g_0.configure_grasp(
+            position_in, rotation_in, 0.0
+        );
+        p_g_1.configure_grasp(
+            position_in, rotation_in, 0.0
+        );
+    }
+
 
     cv::Point3f center = this->vertices[8];
     std::vector<cv::Point3f> rotatedVertices;
@@ -287,7 +305,7 @@ void Box3d::configure_box(
 
     this->vertices = rotatedVertices;
 
-    //debug
+
     cv::Point3f rot = this->rotation;
     std::cout << "rotation rx: " << rot.x/M_PI << "π ,ry: "<< rot.y/M_PI <<"π ,rz: " << rot.z/M_PI <<"π "<< std::endl;
 }
