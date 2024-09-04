@@ -709,9 +709,11 @@ void Annotator::OnBoxConfigure(wxCommandEvent& event){
             size_d.x = -size_diff;
             break;
         case ID_H_PLUS:
+            pos_diff.y = size_diff/2;
             size_d.y = size_diff;
             break;
         case ID_H_MINUS:
+            pos_diff.y = -size_diff/2;
             size_d.y = -size_diff;
             break;
         case ID_D_PLUS:
@@ -764,7 +766,7 @@ void Annotator::OnSingleGraspSpawn(wxCommandEvent & WXUNUSED(event)){
     
         int cls;
         try{
-            int cls = stoi(cls_grasp_select0->GetValue().ToStdString());
+            cls = stoi(cls_grasp_select0->GetValue().ToStdString());
         }catch(const std::exception& e){
             cls = 0;
         }
@@ -828,8 +830,8 @@ void Annotator::OnPairedGraspSpawn(wxCommandEvent & WXUNUSED(event)){
         int cls0;
         int cls1;
         try{
-            int cls0 = stoi(cls_grasp_select0->GetValue().ToStdString());
-            int cls1 = stoi(cls_grasp_select1->GetValue().ToStdString());
+            cls0 = stoi(cls_grasp_select0->GetValue().ToStdString());
+            cls1 = stoi(cls_grasp_select1->GetValue().ToStdString());
         }catch(const std::exception& e){
             cls0 = 0;
             cls1 = 0;
@@ -967,7 +969,44 @@ void Annotator::OnPairedIdSelect(wxCommandEvent & event){
     ShowImage(box_id , grasp_id, paired_id);
 }
 void Annotator::OnPairedGraspCopy(wxCommandEvent & WXUNUSED(event)){
-    
+    Box3d& box =  labeltool->get_anno().get_box(box_id);
+    grasp_id = paired_grasp_select->GetSelection();
+
+    int paired_grasp_id = grasp_id - box.single_grasp_number();
+    if(paired_grasp_id<0) // single grasp
+    {
+        int single_grasp_id = paired_grasp_id;
+        Grasp& grasp = box.get_single_grasp(single_grasp_id);
+        box.single_grasp_spawn(
+            grasp.get_cls(),
+            grasp.get_position(),
+            grasp.get_rotation(),
+            grasp.get_width()
+        );
+    }
+    else // paired grasp
+    {
+        Grasp& grasp0 = std::get<0>(box.get_paired_grasp(paired_grasp_id));
+        Grasp& grasp1 = std::get<1>(box.get_paired_grasp(paired_grasp_id));
+
+        box.paired_grasp_spawn(
+            grasp0.get_cls(),
+            grasp1.get_cls(),
+
+            grasp0.get_position(),
+            grasp0.get_rotation(),
+            grasp0.get_width(),
+            
+            grasp1.get_position(),
+            grasp1.get_rotation(),
+            grasp1.get_width()
+        );
+    }
+    update_grasp_select();
+    updateLabel();
+    ShowImage(box_id);
+
+    return;
 }
 
 //configurate
@@ -1051,46 +1090,49 @@ void Annotator::OnGraspConfigure(wxCommandEvent & event){
     }
 
     //std::cout << "[grasp configure] button id = "<< id << std::endl;
-
-    int paired_grasp_id = grasp_id - box.single_grasp_number();
-    if(paired_grasp_id<0)
-    {
-        box.configure_single_grasp(
-            grasp_id,
-            pos_diff,
-            rot_diff,
-            width_diff
-        );
-    }
-    else
-    {
-        if(paired_id == 2){
-            box.configure_paired_grasp(
-                paired_grasp_id, 0, 
-                pos_diff,
-                rot_diff,
-                width_diff
-            );
-
-            box.configure_paired_grasp(
-                paired_grasp_id, 1, 
-                pos_diff,
-                rot_diff,
-                width_diff
-            );
-
-        }else{
-            box.configure_paired_grasp(
-                paired_grasp_id, paired_id, 
+    try{
+        int paired_grasp_id = grasp_id - box.single_grasp_number();
+        if(paired_grasp_id<0)
+        {
+            box.configure_single_grasp(
+                grasp_id,
                 pos_diff,
                 rot_diff,
                 width_diff
             );
         }
-    }
-    updateLabel();
-    ShowImage(box_id , grasp_id, paired_id);
+        else
+        {
+            if(paired_id == 2){
+                box.configure_paired_grasp(
+                    paired_grasp_id, 0, 
+                    pos_diff,
+                    rot_diff,
+                    width_diff
+                );
 
+                box.configure_paired_grasp(
+                    paired_grasp_id, 1, 
+                    pos_diff,
+                    rot_diff,
+                    width_diff
+                );
+
+            }else{
+                box.configure_paired_grasp(
+                    paired_grasp_id, paired_id, 
+                    pos_diff,
+                    rot_diff,
+                    width_diff
+                );
+            }
+        }
+        updateLabel();
+        ShowImage(box_id , grasp_id, paired_id);
+    }
+    catch(const std::exception& e){
+        wxLogError("Choose a grasp");
+    }
     return;
 }
 
