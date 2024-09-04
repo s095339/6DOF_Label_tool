@@ -99,7 +99,9 @@ public:
         wxButton *box_rz_minus;
     //* paired grasp
     //set paired grasp
+    wxStaticText * grasp0_cls_text;
     wxTextCtrl *cls_grasp_select0;
+    wxStaticText * grasp1_cls_text;
     wxTextCtrl *cls_grasp_select1;
 
     wxButton *single_grasp_spawn;

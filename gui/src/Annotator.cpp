@@ -116,6 +116,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     rotate_world = new wxButton(paintPanel, ID_ROTATE_WORLD, wxT("rotate world"));
     world_degree = new wxStaticText(paintPanel, wxID_ANY, "world degree = 0");
     //* Configure bounding box [hbox1]
+    
     {// position
         //x
         box_x_plus = new wxButton(paintPanel, ID_X_PLUS, wxT("x+"));
@@ -167,7 +168,9 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     }
     
     //* set grasp
+    grasp0_cls_text  = new wxStaticText(paintPanel, wxID_ANY, wxT("Grasp0 Class:"));
     cls_grasp_select0 = new wxTextCtrl(paintPanel, wxID_ANY, "" ,wxDefaultPosition, wxDefaultSize);
+    grasp1_cls_text = new wxStaticText(paintPanel, wxID_ANY, wxT("Grasp1 Class:"));
     cls_grasp_select1 = new wxTextCtrl(paintPanel, wxID_ANY, "" ,wxDefaultPosition, wxDefaultSize);
 
     single_grasp_spawn = new wxButton(paintPanel, ID_SINGLE_GRASP_SPAWM, wxT("s-graspspawn "));
@@ -235,7 +238,7 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
 
 
     //* set box
-    vbox_cls->Add(img_id_text);
+    vbox_cls->Add(cls_select);
     vbox_spawn->Add(box_spawn);
     vbox_remove->Add(box_remove);
     vbox_select->Add(box_select);
@@ -332,7 +335,9 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     //wxBoxSizer* vbox_grasp = new wxBoxSizer(wxVERTICAL);
     //wxBoxSizer *hbox_grasp_cls = new wxBoxSizer(wxHORIZONTAL);
     //wxBoxSizer *hbox_grasp_setting = new wxBoxSizer(wxHORIZONTAL);
+    hbox_grasp_cls->Add(grasp0_cls_text,0, wxALIGN_CENTER);
     hbox_grasp_cls->Add(cls_grasp_select0,0,wxALIGN_CENTER);
+    hbox_grasp_cls->Add(grasp1_cls_text,0, wxALIGN_CENTER);
     hbox_grasp_cls->Add(cls_grasp_select1,0,wxALIGN_CENTER);
 
     hbox_grasp_setting->Add(single_grasp_spawn,0,wxALIGN_CENTER);
@@ -354,11 +359,11 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     hbox_grasp_location_z->Add(grasp_z_minus,0,wxALIGN_CENTER);
     hbox_grasp_location_z->Add(grasp_z_val,0,wxALIGN_CENTER);
 
-    vbox_grasp_location->Add(grasp_position_label);
-    vbox_grasp_location->Add(grasp_stride_text);
-    vbox_grasp_location->Add(hbox_grasp_location_x);
-    vbox_grasp_location->Add(hbox_grasp_location_y);
-    vbox_grasp_location->Add(hbox_grasp_location_z);
+    vbox_grasp_location->Add(grasp_position_label,0,wxALIGN_CENTER);
+    vbox_grasp_location->Add(grasp_stride_text,0,wxALIGN_CENTER);
+    vbox_grasp_location->Add(hbox_grasp_location_x,0,wxALIGN_CENTER);
+    vbox_grasp_location->Add(hbox_grasp_location_y,0,wxALIGN_CENTER);
+    vbox_grasp_location->Add(hbox_grasp_location_z,0,wxALIGN_CENTER);
     ////grasp rotation////
     hbox_grasp_rotation_x->Add(grasp_rx_plus,0,wxALIGN_CENTER);
     hbox_grasp_rotation_x->Add(grasp_rx_minus,0,wxALIGN_CENTER);
@@ -372,29 +377,32 @@ Annotator::Annotator(const wxString& title,  wxBitmapType format, string dir_pat
     hbox_grasp_rotation_z->Add(grasp_rz_minus,0,wxALIGN_CENTER);
     hbox_grasp_rotation_z->Add(grasp_rz_val,0,wxALIGN_CENTER);
 
-    vbox_grasp_rotation->Add(grasp_rotation_label);
-    vbox_grasp_rotation->Add(grasp_rotate_text);
-    vbox_grasp_rotation->Add(hbox_grasp_rotation_x);
-    vbox_grasp_rotation->Add(hbox_grasp_rotation_y);
-    vbox_grasp_rotation->Add(hbox_grasp_rotation_z);
+    vbox_grasp_rotation->Add(grasp_rotation_label,0,wxALIGN_CENTER);
+    vbox_grasp_rotation->Add(grasp_rotate_text,0,wxALIGN_CENTER);
+    vbox_grasp_rotation->Add(hbox_grasp_rotation_x,0,wxALIGN_CENTER);
+    vbox_grasp_rotation->Add(hbox_grasp_rotation_y,0,wxALIGN_CENTER);
+    vbox_grasp_rotation->Add(hbox_grasp_rotation_z,0,wxALIGN_CENTER);
     ////grasp width////
     hbox_grasp_width->Add(grasp_w_plus,0,wxALIGN_CENTER);
     hbox_grasp_width->Add(grasp_w_minus,0,wxALIGN_CENTER);
     hbox_grasp_width->Add(grasp_w_val,0,wxALIGN_CENTER);
 
-    vbox_grasp_width->Add(grasp_width_label);
-    vbox_grasp_width->Add(hbox_grasp_width);
+    vbox_grasp_width->Add(grasp_width_label,0,wxALIGN_CENTER);
+    vbox_grasp_width->Add(hbox_grasp_width,0,wxALIGN_CENTER);
 
     hbox_grasp_configuration->Add(vbox_grasp_location, 1, wxEXPAND);
     hbox_grasp_configuration->Add(vbox_grasp_rotation, 1, wxEXPAND);
     hbox_grasp_configuration->Add(vbox_grasp_width, 1, wxEXPAND);
 
     
-    vbox_grasp->Add(hbox_grasp_cls);
-    vbox_grasp->Add(hbox_grasp_setting);
-    vbox_grasp->Add(hbox_grasp_configuration);
+    //vbox_grasp->Add(hbox_grasp_cls);
+    //vbox_grasp->Add(hbox_grasp_setting);
+    //vbox_grasp->Add(hbox_grasp_configuration);
 
-    vbox->Add(vbox_grasp , 1, wxEXPAND);
+    //vbox->Add(vbox_grasp , 1, wxEXPAND);
+    vbox->Add(hbox_grasp_cls , 0, wxEXPAND);
+    vbox->Add(hbox_grasp_setting , 1, wxEXPAND);
+    vbox->Add(hbox_grasp_configuration , 1, wxEXPAND);
     //==================================================================================
 
     hbox2->Add(previous_10_image);
