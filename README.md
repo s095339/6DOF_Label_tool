@@ -29,6 +29,7 @@ https://docs.wxwidgets.org/latest/overview_cmake.html
 ## Data preparation
 The sample dataset is provided by following link:
 https://drive.google.com/drive/folders/1yYS3XwtdVb95rRmZc94Bi462mfUMRn7D?usp=drive_link
+
 In the dataset, color images are stored in the /color directory, and depth images are stored in the /depth directory. Each color image and its corresponding depth image captured from the same perspective share the same filename.
 
 This project recovers the extrinsic parameters based on the ArUco markers visible in each image. Please place at least four ArUco markers in the environment before collecting images. Use these markers to define the world coordinate system. The information about the world coordinates, ArUco markers, and camera intrinsics should be stored in world_camera_setting.json.
