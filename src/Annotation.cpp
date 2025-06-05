@@ -185,11 +185,11 @@ void Box3d::rotate_box(cv::Vec3f rotation){
     std::cout << "rotation rx: " << rot.x/M_PI << "π ,ry: "<< rot.y/M_PI <<"π ,rz: " << rot.z/M_PI <<"π "<< std::endl;
 }
 void Box3d::configure_box(
-    cv::Point3f position, cv::Vec3f rotation_in, cv::Vec3f size
+    cv::Point3f position_in, cv::Vec3f rotation_in, cv::Vec3f size
 )
 {   
 
-    this->position += position;
+    this->position += position_in;
     this->rotation += rotation_in;
     this->size += size;
 
@@ -244,6 +244,24 @@ void Box3d::configure_box(
         //rhs of right center
         cv::Point3f(right+0.15, cy, cz)
     };
+    
+    for (auto & s_g : this->single_grasp_list){
+        s_g.configure_grasp(
+            position_in, rotation_in, 0.0
+        );
+    }
+
+    for (auto & p_g_tuple : this->paired_grasp_list){
+        auto& p_g_0 = std::get<0>(p_g_tuple);
+        auto& p_g_1 = std::get<1>(p_g_tuple);
+        p_g_0.configure_grasp(
+            position_in, rotation_in, 0.0
+        );
+        p_g_1.configure_grasp(
+            position_in, rotation_in, 0.0
+        );
+    }
+
 
     cv::Point3f center = this->vertices[8];
     std::vector<cv::Point3f> rotatedVertices;
@@ -287,7 +305,7 @@ void Box3d::configure_box(
 
     this->vertices = rotatedVertices;
 
-    //debug
+
     cv::Point3f rot = this->rotation;
     std::cout << "rotation rx: " << rot.x/M_PI << "π ,ry: "<< rot.y/M_PI <<"π ,rz: " << rot.z/M_PI <<"π "<< std::endl;
 }
@@ -332,14 +350,162 @@ int Box3d::get_cls(){
     return this->cls;
 }
 
+
+//grasp
+
+//================grasp===================================
+
+void Box3d::single_grasp_spawn(
+        int cls, 
+        
+        cv::Point3f position, 
+        cv::Point3f rotation, 
+        float  width
+    )
+{
+    this->single_grasp_list.push_back(
+        Grasp(
+                cls,
+                position,
+                rotation,
+                width
+            )
+    );
+}
+
+
+void Box3d::paired_grasp_spawn(
+    int cls0, 
+    int cls1,
+    
+    cv::Point3f position0, 
+    cv::Point3f rotation0, 
+    float  width0,
+
+    cv::Point3f position1, 
+    cv::Point3f rotation1, 
+    float   width1
+    
+    )
+{
+    // grasp0 左 grasp1 右
+    this->paired_grasp_list.push_back(
+        std::tuple<Grasp, Grasp>(
+            Grasp(
+                cls0,
+                position0,
+                rotation0,
+                width0
+            ),
+            Grasp(
+                cls1,
+                position1,
+                rotation1,
+                width1
+            )
+        ) 
+    );
+
+
+}
+void Box3d::paired_grasp_remove(int paired_grasp_id){
+    if(this->paired_grasp_list.empty())
+        std::cout << "[error] no paired grasp in the obj" << std::endl;
+    else
+        this->paired_grasp_list.erase(this->paired_grasp_list.begin() + paired_grasp_id);
+}
+void Box3d::single_grasp_remove(int single_grasp_id){
+    if(this->single_grasp_list.empty())
+        std::cout << "[error] no single grasp in the obj" << std::endl;
+    else
+        this->single_grasp_list.erase(this->single_grasp_list.begin() + single_grasp_id);
+}
+
+
+void Box3d::grasp_clean(){
+    this->single_grasp_list.clear();
+    this->paired_grasp_list.clear();
+}
+
+void Box3d::configure_single_grasp(
+    int single_grasp_id, 
+    cv::Point3f position, 
+    cv::Vec3f rotation, 
+    float width
+){
+    Grasp& single_grasp = this->single_grasp_list.at(single_grasp_id);
+    
+    single_grasp.configure_grasp(position,rotation,width);
+
+}
+
+
+void Box3d::configure_paired_grasp(
+    int paired_grasp_id, 
+    int paired_id,
+    cv::Point3f position, 
+    cv::Vec3f rotation, 
+    float width
+){
+    std::tuple<Grasp, Grasp>& paired_grasp = this->paired_grasp_list.at(paired_grasp_id);
+    
+    Grasp& grasp0 = std::get<0>(paired_grasp);
+    Grasp& grasp1 = std::get<1>(paired_grasp);
+
+    if(paired_id == 0)
+        grasp0.configure_grasp(position,rotation,width);
+    else
+        grasp1.configure_grasp(position,rotation,width);
+    
+
+}
+
+Grasp& Box3d::get_single_grasp(int single_grasp_id){
+    return this->single_grasp_list.at(single_grasp_id);
+}
+std::tuple<Grasp, Grasp>& Box3d::get_paired_grasp(int paired_grasp_id){
+    return this->paired_grasp_list.at(paired_grasp_id);
+}
+
+int Box3d::single_grasp_number(){
+    return this->single_grasp_list.size();
+}
+int Box3d::paired_grasp_number(){
+    return this->paired_grasp_list.size();
+}
+
+
+
+//=============================================================
+
+
 json Box3d::box_to_json(int idx){
-    return {
-        {"box_id", idx},
-        {"class_id", this->cls},
-        {"position", {this->position.x, this->position.y, this->position.z}},
-        {"rotation", {this->rotation[0], this->rotation[1], this->rotation[2]}},
-        {"size", {this->size[0], this->size[1], this->size[2]}}
-    };
+    json j;
+
+    j["box_id"] = idx;
+    j["class_id"] =  this->cls;
+    j["position"] = {this->position.x, this->position.y, this->position.z};
+    j["rotation"] = {this->rotation[0], this->rotation[1], this->rotation[2]};
+    j["size"] = {this->size[0], this->size[1], this->size[2]};
+
+    j["paired_grasp_list"] = json::array();
+    j["single_grasp_list"] = json::array();
+
+    for(int i=0;i<this->single_grasp_number();i++){
+        j["single_grasp_list"].push_back(
+            this->get_single_grasp(i).grasp_to_json(i)
+        );
+    }
+    for(int i=0;i<this->paired_grasp_number();i++){
+        
+        j["paired_grasp_list"][i].push_back(
+            std::get<0>(this->get_paired_grasp(i)).grasp_to_json(i)
+        );
+        j["paired_grasp_list"][i].push_back(
+            std::get<1>(this->get_paired_grasp(i)).grasp_to_json(i)
+        );
+    }
+    return j;
 
 }
 //***************************//
@@ -420,6 +586,8 @@ double Annotation::LoadJson(const std::string& filename){
     file >> j;
     file.close();
     std::cout << "load json OK" << std::endl;
+
+    int box_idx = 0;
     for (const auto& item : j["box_list"]) {
         int cls = item["class_id"];
         cv::Point3f position(item["position"][0], item["position"][1], item["position"][2]);
@@ -427,6 +595,40 @@ double Annotation::LoadJson(const std::string& filename){
         cv::Vec3f size(item["size"][0], item["size"][1], item["size"][2]);
         
         this->box_spawn(cls, position, rotation, size);
+        // grasp
+        Box3d& box = this->Box_list.at(box_idx++);
+        for(const auto& s_g_item : item["single_grasp_list"]){
+            cv::Point3f position(s_g_item["position"][0], s_g_item["position"][1], s_g_item["position"][2]);
+            cv::Point3f rotation(s_g_item["rotation"][0], s_g_item["rotation"][1], s_g_item["rotation"][2]);
+            float width(s_g_item["width"]);
+            int cls = s_g_item["class_id"];
+
+            box.single_grasp_spawn(
+                cls,
+                position,
+                rotation,
+                width
+            );
+        }
+        for(const auto& p_g_item : item["paired_grasp_list"]){
+            cv::Point3f position0(p_g_item[0]["position"][0], p_g_item[0]["position"][1], p_g_item[0]["position"][2]);
+            cv::Point3f rotation0(p_g_item[0]["rotation"][0], p_g_item[0]["rotation"][1], p_g_item[0]["rotation"][2]);
+            float width0(p_g_item[0]["width"]);
+            int cls0 = p_g_item[0]["class_id"];
+
+            cv::Point3f position1(p_g_item[1]["position"][0], p_g_item[1]["position"][1], p_g_item[1]["position"][2]);
+            cv::Point3f rotation1(p_g_item[1]["rotation"][0], p_g_item[1]["rotation"][1], p_g_item[1]["rotation"][2]);
+            float width1(p_g_item[1]["width"]);
+            int cls1 = p_g_item[1]["class_id"];
+
+            box.paired_grasp_spawn(
+                cls0,cls1,
+                position0, rotation0, width0,
+                position1, rotation1, width1
+            );
+            
+        }
+        
     }
     try{
         return j["world_rotation"];
@@ -439,7 +641,7 @@ double Annotation::LoadJson(const std::string& filename){
 void Annotation::dumpToJson(const std::string& filename,  double world_rotation ){
     json j;
     
-    std::string fullfilename = filename + "/box.json";
+    std::string fullfilename = filename + "/box_grasp.json";
     
     std::cout <<"ENTER OK" << std::endl;
     if (fs::exists(fullfilename)) {

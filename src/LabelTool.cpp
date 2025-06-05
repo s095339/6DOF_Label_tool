@@ -12,7 +12,7 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
-
+#include "grasp.h"
 
 namespace fs = std::filesystem;
 
@@ -381,13 +381,18 @@ Annotation& LabelTool::get_anno(){
 int LabelTool::get_data_length(){
     return this->data_list.size();
 }
-cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
+cv::Mat LabelTool::imshow_with_label(
+    int idx, 
+    int show_selected_box_direction,
+    int show_selected_grasp,
+    int show_selected_paired_id
+    ){
                                     // image id   //the id of the box 
     //
     cv::Point3f origin(0.0,0.0,0.0);
-    cv::Point3f xaxis(0.15,0.0,0.0);
-    cv::Point3f yaxis(0.0,0.15,0.0);
-    cv::Point3f zaxis(0.0,0.0,0.15);
+    cv::Point3f xaxis(0.05,0.0,0.0);
+    cv::Point3f yaxis(0.0,0.05,0.0);
+    cv::Point3f zaxis(0.0,0.0,0.05);
     std::vector<cv::Point3f> axis_point = {   
         origin,
         xaxis,
@@ -433,7 +438,7 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
             //    img, std::to_string(idx++),pt+cv::Point2f(2,2), 1, 2, cv::Scalar(0,255,255),2
             //    );
 
-            cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            //cv::circle(img, pt, 2, cv::Scalar(0,128,128));
         }
 
         cv::line(img,pts_camera[0],pts_camera[1], cv::Scalar(255,0,0),2);
@@ -441,20 +446,114 @@ cv::Mat LabelTool::imshow_with_label(int idx, int show_selected_box_direction){
         cv::line(img,pts_camera[5],pts_camera[1], cv::Scalar(255,0,0),2);
         cv::line(img,pts_camera[4],pts_camera[5], cv::Scalar(255,0,0),2);
 
-        cv::line(img,pts_camera[2],pts_camera[6], cv::Scalar(0,255,0),2);
-        cv::line(img,pts_camera[3],pts_camera[7], cv::Scalar(0,255,0),2);
-        cv::line(img,pts_camera[2],pts_camera[3], cv::Scalar(0,255,0),2);
-        cv::line(img,pts_camera[6],pts_camera[7], cv::Scalar(0,255,0),2);
+        cv::line(img,pts_camera[2],pts_camera[6], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[3],pts_camera[7], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[2],pts_camera[3], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[6],pts_camera[7], cv::Scalar(255,0,0),2);
 
-        cv::line(img,pts_camera[0],pts_camera[2], cv::Scalar(0,0,255),2);
-        cv::line(img,pts_camera[3],pts_camera[1], cv::Scalar(0,0,255),2);
-        cv::line(img,pts_camera[7],pts_camera[5], cv::Scalar(0,0,255),2);
-        cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(0,0,255),2);
+        cv::line(img,pts_camera[0],pts_camera[2], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[3],pts_camera[1], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[7],pts_camera[5], cv::Scalar(255,0,0),2);
+        cv::line(img,pts_camera[6],pts_camera[4], cv::Scalar(255,0,0),2);
 
         if(i == show_selected_box_direction){
             cv::arrowedLine(img,pts_camera[8],pts_camera[9], cv::Scalar(255,0,0),3,7);
             cv::arrowedLine(img,pts_camera[8],pts_camera[10], cv::Scalar(0,255,0),3,7);
             cv::arrowedLine(img,pts_camera[8],pts_camera[11], cv::Scalar(0,0,255),3,7);
+        }
+
+
+        // print grasp
+        
+        cv::Scalar color;
+
+
+        for(int j=0; j<box.single_grasp_number(); j++){
+            if(j == show_selected_grasp){
+                color = cv::Scalar(0,200,200);
+            }else{
+                color = cv::Scalar(0, 0, 255);
+            }
+
+            std::vector<cv::Point3f> vertices_grasp0 = box.get_single_grasp(j).get_vertex(); 
+            std::vector<cv::Point2f> pts_camera_grasp0; 
+            cv::projectPoints(vertices_grasp0,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_grasp0);
+
+            for(int kk=0; kk<5; kk++){
+                auto pt = pts_camera_grasp0[kk];
+
+                cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            }
+
+
+            cv::line(img,pts_camera_grasp0[5],pts_camera_grasp0[7], color,2);
+            cv::line(img,pts_camera_grasp0[6],pts_camera_grasp0[8], color,2);
+            cv::line(img,pts_camera_grasp0[7],pts_camera_grasp0[8], color,2);
+            cv::line(img,pts_camera_grasp0[9],pts_camera_grasp0[10], color,2);
+            if(i == show_selected_box_direction && j == show_selected_grasp){
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[4],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[3],pts_camera_grasp0[4], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[3], cv::Scalar(200,200,0),2);
+            }
+
+        }
+        for(int j=0; j< box.paired_grasp_number(); j++){
+            
+            int show_selected_paired_grasp = show_selected_grasp-box.single_grasp_number();
+
+            if(j == show_selected_paired_grasp){
+                //std::cout << " paired grasp color "<< std::endl;
+                color = cv::Scalar(255,0,255);
+            }else{
+                color = cv::Scalar(0, 0, 255);
+            }
+
+            std::vector<cv::Point3f> vertices_grasp0 = std::get<0>(box.get_paired_grasp(j)).get_vertex(); 
+            std::vector<cv::Point2f> pts_camera_grasp0; 
+            cv::projectPoints(vertices_grasp0,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_grasp0);
+
+            for(int kk=0; kk<5; kk++){
+                auto pt = pts_camera_grasp0[kk];
+
+                cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            }
+
+
+            cv::line(img,pts_camera_grasp0[5],pts_camera_grasp0[7], color,2);
+            cv::line(img,pts_camera_grasp0[6],pts_camera_grasp0[8], color,2);
+            cv::line(img,pts_camera_grasp0[7],pts_camera_grasp0[8], color,2);
+            cv::line(img,pts_camera_grasp0[9],pts_camera_grasp0[10], color,2);
+            if(i == show_selected_box_direction && j == show_selected_paired_grasp && (show_selected_paired_id == 0 ||  show_selected_paired_id == 2) ){
+                //std::cout << " paired grasp id 0 "<< std::endl;
+
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[4],pts_camera_grasp0[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[3],pts_camera_grasp0[4], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp0[1],pts_camera_grasp0[3], cv::Scalar(200,200,0),2);
+            }
+
+
+            std::vector<cv::Point3f> vertices_grasp1 = std::get<1>(box.get_paired_grasp(j)).get_vertex(); 
+            std::vector<cv::Point2f> pts_camera_grasp1; 
+            cv::projectPoints(vertices_grasp1,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_grasp1);
+
+            for(int kk=0; kk<5; kk++){
+                auto pt = pts_camera_grasp1[kk];
+
+                cv::circle(img, pt, 2, cv::Scalar(0,128,128));
+            }
+            
+            cv::line(img,pts_camera_grasp1[5],pts_camera_grasp1[7], color,2);
+            cv::line(img,pts_camera_grasp1[6],pts_camera_grasp1[8], color,2);
+            cv::line(img,pts_camera_grasp1[7],pts_camera_grasp1[8], color,2);
+            cv::line(img,pts_camera_grasp1[9],pts_camera_grasp1[10], color,2);
+            if(i == show_selected_box_direction && j == show_selected_paired_grasp && (show_selected_paired_id == 1 || show_selected_paired_id == 2) ){
+                cv::line(img,pts_camera_grasp1[1],pts_camera_grasp1[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp1[4],pts_camera_grasp1[2], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp1[3],pts_camera_grasp1[4], cv::Scalar(200,200,0),2);
+                cv::line(img,pts_camera_grasp1[1],pts_camera_grasp1[3], cv::Scalar(200,200,0),2);
+            }
         }
     }
 
@@ -516,7 +615,7 @@ void LabelTool::remove_imgdat(int idx){
 
 }
 
-bool LabelTool::_get_pnp_pose(std::vector<cv::Point2f>& points_2d, cv::Vec3f size,  cv::Vec3f&rvec , cv::Vec3f&tvec){
+bool LabelTool::_get_box_pnp_pose(std::vector<cv::Point2f>& points_2d, cv::Vec3f size,  cv::Vec3f&rvec , cv::Vec3f&tvec){
     float width = size[0];   // Extract width from size
     float height = size[1];  // Extract height from size
     float depth = size[2];   // Extract depth from size
@@ -547,6 +646,37 @@ bool LabelTool::_get_pnp_pose(std::vector<cv::Point2f>& points_2d, cv::Vec3f siz
     return cv::solvePnP(objectPoints, points_2d, this->intrinsic, this->dist, rvec, tvec);
      
 }
+
+bool LabelTool::_get_grasp_pnp_pose(
+    std::vector<cv::Point2f>&points_2d , cv::Vec3f&rvec, cv::Vec3f&tvec,  float grasp_rectangle_width, float grasp_rectangle_height
+    )
+{
+    float cx = 0.0;
+    float cy = 0.0;
+    float cz = 0.0;
+    float top, bottom,right,left;
+    //note that it is right hand rule
+    
+    //x axis point to the left
+    left = cx; // grasp center is on the left
+    right = cx - grasp_rectangle_width;
+    //y point upperward
+    top = cy + grasp_rectangle_height / 2;
+    bottom = cy - grasp_rectangle_height / 2;
+   
+    std::vector<cv::Point3f> objectPoints;
+    objectPoints = {
+        // For PnP algorithm
+        cv::Point3f(cx, cy, cz), //grasp center point
+        cv::Point3f(left, top, cz), // top left
+        cv::Point3f(left, bottom, cz), // bottom left
+        cv::Point3f(right, top, cz), // top right
+        cv::Point3f(right, bottom, cz) // bottom right
+    };
+
+    return cv::solvePnP(objectPoints, points_2d, this->intrinsic, this->dist, rvec, tvec);
+}
+
 void LabelTool::dump_dataset_json(){
 
     fs::path path(dataloader.get_datapath());
@@ -682,10 +812,136 @@ void LabelTool::dump_dataset_json(){
             obj["scale"]= {box.get_size().x, box.get_size().y, box.get_size().z};
             cv::Vec3f rvec; 
             cv::Vec3f tvec;
-            this->_get_pnp_pose(pnp_box_2d, box.get_size(),rvec, tvec);
+            this->_get_box_pnp_pose(pnp_box_2d, box.get_size(),rvec, tvec);
             obj["rvec"] = {rvec[0], rvec[1], rvec[2]};
             obj["tvec"] = {tvec[0], tvec[1], tvec[2]};
+            //Grasp==========================================================
+            obj["grasp_rectangle_height"] = grasp_rect_h;
+            obj["grasp_rectangle_width"] = grasp_rect_w;
+            obj["single_grasp_list"] = json::array();
+            obj["paired_grasp_list"] = json::array();
 
+            //grasp====
+            // class, keypoint3d(world),  location(world), projected_keypoint, rvec(camera), tvec(camera), width
+            //=========
+            for(int s_g_idx=0; s_g_idx<box.single_grasp_number(); s_g_idx++){
+                // every single grasp
+                Grasp& s_grasp = box.get_single_grasp(s_g_idx);
+                
+                //get 2d projected keypoints
+                std::vector<cv::Point2f> pts_camera_s_grasp; 
+                std::vector<cv::Point3f> g_ver  = s_grasp.get_vertex();
+                cv::projectPoints(g_ver,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_s_grasp);
+                
+                //create json object for this single grasp
+                json single_grasp_obj;
+                single_grasp_obj["class"] = s_grasp.get_cls();
+                single_grasp_obj["width"] = s_grasp.get_width();
+                single_grasp_obj["keypoints_3d"] = json::array();
+                single_grasp_obj["projected_keypoints"] = json::array();
+                
+                //record 2d 3d keypoints
+                for(int kpt_idx = 0; kpt_idx<g_ver.size(); kpt_idx++){
+                    single_grasp_obj["keypoints_3d"].push_back(
+                        {g_ver[kpt_idx].x,g_ver[kpt_idx].y,g_ver[kpt_idx].z}
+                        );
+                    single_grasp_obj["projected_keypoints"].push_back(
+                        {int(pts_camera_s_grasp[kpt_idx].x), int(pts_camera_s_grasp[kpt_idx].y)}
+                        );
+                } 
+                
+                // calculate rvec tvec of grasp
+                cv::Vec3f rvec_grasp; 
+                cv::Vec3f tvec_grasp;
+                
+                std::vector<cv::Point2f> s_grasp_2d_pnp_point(pts_camera_s_grasp.begin(), pts_camera_s_grasp.begin()+5);
+                this->_get_grasp_pnp_pose(s_grasp_2d_pnp_point, rvec_grasp, tvec_grasp, grasp_rect_w, grasp_rect_h);
+                single_grasp_obj["rvec"] = {rvec_grasp[0], rvec_grasp[1], rvec_grasp[2]};
+                single_grasp_obj["tvec"] = {tvec_grasp[0], tvec_grasp[1], tvec_grasp[2]};
+
+                
+                obj["single_grasp_list"].push_back(single_grasp_obj);
+            }
+            for(int p_g_idx=0; p_g_idx<box.paired_grasp_number(); p_g_idx++){
+                
+                json paired_grasp_obj = json::array();
+                {
+                    //every single grasp in paired grasps
+                    Grasp& p_grasp0 = std::get<0>(box.get_paired_grasp(p_g_idx));
+
+                    //get 2d projected keypoints
+                    std::vector<cv::Point2f> pts_camera_p_grasp; 
+                    std::vector<cv::Point3f> g_ver  = p_grasp0.get_vertex();
+                    cv::projectPoints(g_ver,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_p_grasp);
+                    
+                    //create json object for this single grasp
+                    json single_grasp_obj;
+                    single_grasp_obj["class"] = p_grasp0.get_cls();
+                    single_grasp_obj["width"] = p_grasp0.get_width();
+                    single_grasp_obj["keypoints_3d"] = json::array();
+                    single_grasp_obj["projected_keypoints"] = json::array();
+                    
+                    //record 2d 3d keypoints
+                    for(int kpt_idx = 0; kpt_idx<g_ver.size(); kpt_idx++){
+                        single_grasp_obj["keypoints_3d"].push_back(
+                            {g_ver[kpt_idx].x,g_ver[kpt_idx].y,g_ver[kpt_idx].z}
+                            );
+                        single_grasp_obj["projected_keypoints"].push_back(
+                            {int(pts_camera_p_grasp[kpt_idx].x), int(pts_camera_p_grasp[kpt_idx].y)}
+                            );
+                    } 
+
+                    // calculate rvec tvec of grasp
+                    cv::Vec3f rvec_grasp; 
+                    cv::Vec3f tvec_grasp;
+                    std::vector<cv::Point2f> p_grasp_2d_pnp_point(pts_camera_p_grasp.begin(), pts_camera_p_grasp.begin()+5);
+                    this->_get_grasp_pnp_pose(p_grasp_2d_pnp_point, rvec_grasp, tvec_grasp, grasp_rect_w, grasp_rect_h);
+                    single_grasp_obj["rvec"] = {rvec_grasp[0], rvec_grasp[1], rvec_grasp[2]};
+                    single_grasp_obj["tvec"] = {tvec_grasp[0], tvec_grasp[1], tvec_grasp[2]};
+
+                    paired_grasp_obj.push_back(single_grasp_obj);
+                }
+                {
+                    //every single grasp in paired grasps
+                    Grasp& p_grasp1 = std::get<1>(box.get_paired_grasp(p_g_idx));
+
+                    //get 2d projected keypoints
+                    std::vector<cv::Point2f> pts_camera_p_grasp; 
+                    std::vector<cv::Point3f> g_ver  = p_grasp1.get_vertex();
+                    cv::projectPoints(g_ver,rvecs, tvecs, this->intrinsic, this->dist, pts_camera_p_grasp);
+                    
+                    //create json object for this single grasp
+                    json single_grasp_obj;
+                    single_grasp_obj["class"] = p_grasp1.get_cls();
+                    single_grasp_obj["width"] = p_grasp1.get_width();
+                    single_grasp_obj["keypoints_3d"] = json::array();
+                    single_grasp_obj["projected_keypoints"] = json::array();
+                    
+                    //record 2d 3d keypoints
+                    for(int kpt_idx = 0; kpt_idx<g_ver.size(); kpt_idx++){
+                        single_grasp_obj["keypoints_3d"].push_back(
+                            {g_ver[kpt_idx].x,g_ver[kpt_idx].y,g_ver[kpt_idx].z}
+                            );
+                        single_grasp_obj["projected_keypoints"].push_back(
+                            {int(pts_camera_p_grasp[kpt_idx].x), int(pts_camera_p_grasp[kpt_idx].y)}
+                            );
+                    } 
+
+                    // calculate rvec tvec of grasp
+                    cv::Vec3f rvec_grasp; 
+                    cv::Vec3f tvec_grasp;
+                    std::vector<cv::Point2f> p_grasp_2d_pnp_point(pts_camera_p_grasp.begin(), pts_camera_p_grasp.begin()+5);
+                    this->_get_grasp_pnp_pose(p_grasp_2d_pnp_point, rvec_grasp, tvec_grasp, grasp_rect_w, grasp_rect_h);
+                    single_grasp_obj["rvec"] = {rvec_grasp[0], rvec_grasp[1], rvec_grasp[2]};
+                    single_grasp_obj["tvec"] = {tvec_grasp[0], tvec_grasp[1], tvec_grasp[2]};
+
+                    paired_grasp_obj.push_back(single_grasp_obj);
+                }
+                obj["paired_grasp_list"].push_back(paired_grasp_obj);
+            }
+
+
+            //===============================================================
             j["objects"].push_back(obj);
 
 

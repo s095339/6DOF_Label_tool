@@ -90,8 +90,8 @@ private:
     int aruco_dict;
     //depth 
     bool is_depth;
-    bool _get_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f, cv::Vec3f&, cv::Vec3f&);
-
+    bool _get_box_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f, cv::Vec3f&, cv::Vec3f&);
+    bool _get_grasp_pnp_pose(std::vector<cv::Point2f>&, cv::Vec3f&, cv::Vec3f&, float, float);
 
 public:
     LabelTool(DataLoader&); //Constructor
@@ -102,7 +102,12 @@ public:
     ImageData get_imgdat(int);
     Annotation& get_anno();
     
-    cv::Mat imshow_with_label(int idx, int show_selected_box_direction = -1); //for test
+    cv::Mat imshow_with_label(
+        int idx, 
+        int show_selected_box_direction = -1, 
+        int show_selected_grasp = -1,
+        int show_selected_paired_id = -1
+         ); //for test
 
     int get_data_length();// get the number of imagedata
     void generate_annotation();
