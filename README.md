@@ -3,9 +3,13 @@
 This project provides a labeling tool for research on 6-DoF pose estimation and grasp generation based on keypoint estimation. For a project that uses this labeling tool, please refer to the following link:
 https://github.com/s095339/GraspGeneration
 
+---
 
-| ![image](images/Stream_screenshot_05.06.2025.png)| ![alt text](image.png)|
+|![image](images/Stream_screenshot_05.06.2025.png)|![image](images/Stream_screenshot_11.06_2.2025.png)|
 |-|-|
+|![image](images/Stream_screenshot_11.06.2025_3.png)|![image](images/Stream_screenshot_11.06.2025.png)|
+|![alt text](image.png)|
+
 
 ## Enviroment
 1.  Ubuntu 22.04 
