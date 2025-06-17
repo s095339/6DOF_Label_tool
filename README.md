@@ -1,4 +1,4 @@
-# GraspGeneration labeling tool: 6DOF_LABEL_TOOL
+# 碩論研究用標註系統 RGB-D GraspPose Annotator
 
 This project provides a labeling tool for research on 6-DoF pose estimation and grasp generation based on keypoint estimation. For a project that uses this labeling tool, please refer to the following link:
 https://github.com/s095339/GraspGeneration
